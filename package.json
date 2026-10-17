@@ -1,0 +1,17 @@
+{
+  "name": "recap-desk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "复盘稿工作台：AI 投顾盘后复盘助手（同花顺笔试第三题）",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

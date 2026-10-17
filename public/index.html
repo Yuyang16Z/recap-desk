@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>复盘稿工作台</title>
+  <meta name="description" content="AI 投顾盘后复盘助手：真实行情数据 → Agent 取证 → 可溯源复盘稿 → 合规拦截 → 人工审批">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <b>复盘稿工作台</b>
+      <span>AI 投顾盘后复盘助手 · 数据：同花顺金融数据（扶摇 API）</span>
+    </div>
+    <div class="top-actions">
+      <div class="role" title="切换角色以体验投顾撰写 → 合规审核的协作流程">
+        <span>当前角色</span>
+        <button data-role="投顾" class="on">投资顾问</button>
+        <button data-role="合规">合规审核</button>
+      </div>
+      <button id="btnMetrics" class="ghost">价值指标</button>
+      <button id="btnAbout" class="ghost">产品说明</button>
+    </div>
+  </header>
+
+  <main>
+    <aside class="left">
+      <section class="card">
+        <h3>新建复盘</h3>
+        <label class="field">交易日
+          <input type="date" id="date">
+        </label>
+        <div class="hint" id="dateHint">正在读取交易日历…</div>
+        <label class="field">受众风格
+          <select id="audience">
+            <option value="steady">稳健型客户群</option>
+            <option value="short">短线交流群</option>
+            <option value="inst">机构/内部简报</option>
+          </select>
+        </label>
+        <details class="sim">
+          <summary>故障演练（验证异常处理）</summary>
+          <label><input type="checkbox" value="fuyao:limit_up_pool"> 涨停池接口失败</label>
+          <label><input type="checkbox" value="fuyao:index_kline"> 指数日K接口失败</label>
+          <label><input type="checkbox" value="stale_stats"> 涨停统计返回过期日期</label>
+          <label><input type="checkbox" value="llm_down"> 大模型不可用（降级）</label>
+          <label><input type="checkbox" value="inject_violation"> 注入违规句（测合规拦截）</label>
+        </details>
+        <button id="btnRun" class="primary">生成复盘底稿</button>
+        <div class="hint">一次生成约 40–90 秒：先取数，再由 Agent 调工具补证据，最后撰写并校验。</div>
+      </section>
+      <section class="card">
+        <h3>历史记录</h3>
+        <ul id="runList" class="run-list"></ul>
+      </section>
+    </aside>
+
+    <section class="center">
+      <div id="progress" class="card progress hidden"></div>
+      <div id="runView"></div>
+      <div id="empty" class="card empty">
+        <h2>收盘后 10 分钟，拿到一份每个数字都能回到原始字段的复盘稿</h2>
+        <ol>
+          <li><b>取数</b>：校验交易日，按所选日期拉取指数日K、涨跌停/炸板池、涨停统计、连板天梯、热股榜、异动解读。</li>
+          <li><b>Agent 取证</b>：大模型判断当天主线，自主调用工具查异动原因、题材成员、板块指数和高位股累计涨幅。</li>
+          <li><b>撰写</b>：正文数字只能写成底稿编号，由系统按原值渲染；每句标注事实、推断或待确认。</li>
+          <li><b>校验与协作</b>：未溯源数字、预测、荐股、收益承诺会被拦截；投顾修改后提交，合规审核通过才生成定稿。</li>
+        </ol>
+        <p class="hint">左侧"历史记录"里有一份真实数据样例，可直接打开体验审阅流程。</p>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="tabs">
+        <button data-tab="facts" class="on">事实底稿</button>
+        <button data-tab="dq">数据质量</button>
+        <button data-tab="calls">工具调用</button>
+        <button data-tab="audit">审计与反馈</button>
+      </div>
+      <div id="sidePanel" class="side-panel"><p class="hint">打开一份复盘后，这里显示每个数字的来源、字段、时点与口径。</p></div>
+    </aside>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-body">
+      <button class="close" aria-label="关闭">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <footer>本工具用于投顾内部内容生产与合规前置检查，输出需经人工审核；所有内容不构成投资建议或收益承诺。</footer>
+  <script src="/app.js"></script>
+</body>
+</html>
