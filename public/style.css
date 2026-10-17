@@ -122,7 +122,8 @@ button.add { margin-top: 8px; }
 footer { text-align: center; color: var(--sub); font-size: 12px; padding: 16px; }
 
 @media (max-width: 1180px) { main { grid-template-columns: 240px minmax(0, 1fr); } .right { grid-column: 1 / -1; position: static; } }
-@media (max-width: 760px) { main { grid-template-columns: 1fr; padding: 10px 16px; } .top { padding: 10px 16px; } .gate .acts { margin-left: 0; } }
+@media (max-width: 760px) { main { grid-template-columns: minmax(0, 1fr); padding: 10px 16px; } .top { padding: 10px 16px; } .gate .acts { margin-left: 0; } .hypo table { min-width: 640px; } }
+.center, .left, .right, .card { min-width: 0; }
 
 .tag.ok { background: var(--fact-bg); color: var(--fact); }
 .hypo table, .modal .tbl table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -144,3 +145,4 @@ details.repair div { margin: 2px 0 0 12px; }
 table.eval { width: 100%; border-collapse: collapse; font-size: 12px; }
 table.eval th, table.eval td { border-bottom: 1px solid #f0f2f5; padding: 5px 6px; text-align: left; white-space: nowrap; }
 table.eval th { color: var(--sub); background: #fafbfc; }
+.meta .tag { white-space: normal; display: inline-block; margin: 2px 0 0; }
