@@ -83,7 +83,17 @@ function getRun(req, res) {
   if (!run) res.status(404).json({ error: '记录不存在（免费实例重启后运行时记录会清空，样例记录除外）' });
   return run;
 }
-app.get('/api/runs/:id', (req, res) => { const run = getRun(req, res); if (run) res.json(run); });
+app.get('/api/runs/:id', (req, res) => {
+  const run = getRun(req, res);
+  if (!run) return;
+  // 可编辑的草稿按当前规则重算校验结果，避免规则升级后页面显示过期的门禁状态
+  if (EDITABLE.has(run.status) && run.draft) {
+    const names = entityNames(run);
+    for (const sec of run.draft.sections) for (const s of sec.sentences) s.flags = verifySentence(s, run, names);
+    run.gate = computeGate(run.draft);
+  }
+  res.json(run);
+});
 
 function findSentence(run, sid) {
   for (const sec of run.draft.sections) {
@@ -179,6 +189,9 @@ app.post('/api/runs/:id/submit', (req, res) => {
   for (const sec of run.draft.sections) for (const s of sec.sentences) s.flags = verifySentence(s, run, names);
   run.gate = computeGate(run.draft);
   if (!run.gate.can_submit) {
+    // 按最新规则重算的结果要落盘：规则升级后，存量草稿在提交时会暴露新的阻断项
+    run.audit.push({ at: Date.now(), actor: '系统', action: 'submit_blocked', detail: `提交被门禁拒绝：阻断项 ${run.gate.block}、待确认 ${run.gate.pending_unresolved}` });
+    store.save(run);
     return res.status(409).json({ error: `还有 ${run.gate.block} 个阻断项、${run.gate.pending_unresolved} 条待确认句未处理，不能提交合规审核` });
   }
   run.status = 'in_review';

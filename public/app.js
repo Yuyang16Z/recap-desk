@@ -235,7 +235,16 @@ function renderSentence(s, run, editable) {
 
 function bindRun(run, editable) {
   const upd = async (p, body, method = 'PATCH') => {
-    try { state.run = await api(`/api/runs/${run.id}${p}`, { method, body }); state.editing = null; render(); loadRuns(); } catch (e) { toast(e.message, true); }
+    try {
+      state.run = await api(`/api/runs/${run.id}${p}`, { method, body });
+      state.editing = null;
+      render();
+      loadRuns();
+    } catch (e) {
+      toast(e.message, true);
+      // 失败时（如提交被门禁拒绝）服务端可能已按最新规则重算了校验结果，重新拉取以免页面显示过期状态
+      try { state.run = await api(`/api/runs/${run.id}`); state.editing = null; render(); } catch { /* 保持当前视图 */ }
+    }
   };
   $$('.chip[data-ref], .ref[data-ref]').forEach((c) => c.onclick = () => focusRef(c.dataset.ref));
   $$('.sent[data-sid]').forEach((el) => {
@@ -355,7 +364,7 @@ function showAbout() {
   <p><b>AI 做什么：</b>① Agent 根据当天盘面判断主线，自主决定查哪些个股异动原因、哪些板块指数，补齐证据；② 把十几类结构化数据和文本证据组织成可读的复盘稿，并区分事实、推断、待确认；③ 语义层合规复核，补关键词规则漏掉的隐含预测和变相建议。</p>
   <p><b>不让 AI 做什么：</b>不让它生成数字（数字由系统按原始字段渲染）、不让它决定是否发布（需投顾提交 + 合规通过）、不让它在数据缺失时“补全”。</p>
   <p><b>不做什么（非目标）：</b>不预测涨跌、不推荐个股、不面向散户直接输出、不替代合规审核。</p>
-  <p><b>数据：</b>同花顺金融数据（扶摇 API）：交易日历、指数日K、涨跌停/炸板池、涨停统计、连板天梯、历史热股榜、日期范围异动解读、全A快照、同花顺行业/概念指数。</p>
+  <p><b>数据：</b>同花顺金融数据（扶摇 API）：交易日历、指数日K、涨跌停/炸板池、涨停统计、连板天梯、历史热股榜、日期范围异动解读、全A快照、同花顺行业/概念指数；iFinD MCP：财经新闻检索（第二数据源，与异动解读交叉印证）。</p>
   <p class="hint">完整的问题定义、指标口径、失败条件与验证计划见代码仓库 README。</p>`);
 }
 
