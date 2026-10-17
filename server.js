@@ -20,7 +20,7 @@ const store = new Store(path.join(ROOT, 'data/runtime'), path.join(ROOT, 'data/s
 const hits = new Map();
 let active = 0;
 const PER_IP = Number(process.env.RUNS_PER_IP_PER_HOUR || 8);
-const MAX_ACTIVE = 2;
+const MAX_ACTIVE = Number(process.env.MAX_ACTIVE_RUNS || 3);
 function allow(ip) {
   const now = Date.now();
   const arr = (hits.get(ip) || []).filter((t) => now - t < 3600e3);

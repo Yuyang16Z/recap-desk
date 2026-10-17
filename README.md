@@ -2,7 +2,7 @@
 
 > 收盘后，投资顾问点一次「生成」，约 20–30 秒拿到一份复盘稿草稿。稿中每个数字都能点开查到接口字段、时点和口径，每句话都标明是事实、推断还是待确认；预测、荐股、收益承诺这类表述，以及来路不明的数字，在提交前会被拦下；合规审核通过后才生成可发布的定稿。
 
-- **在线体验**：https://recap-desk.onrender.com（Render 免费实例，闲置后首次打开约需 30–60 秒唤醒）
+- **在线体验**：https://recap-desk.onrender.com（Render 免费实例，新加坡区；闲置后首次打开约需 30–60 秒唤醒。2026-10-18 用站长工具从国内 53 个节点 ping：域名正常解析，多数节点 150–270ms 可达，浙江杭州多线 163ms）
 - **源代码**：https://github.com/Yuyang16Z/recap-desk
 - **测试说明**：[docs/TESTING.md](docs/TESTING.md) · **AI 使用与验证记录**：[docs/AI_USAGE.md](docs/AI_USAGE.md)
 - **数据**：同花顺金融数据（扶摇 API，12 类接口）+ iFinD MCP（新闻检索）；**模型**：DeepSeek（OpenAI 兼容接口，可换）
@@ -89,7 +89,7 @@
 | **状态** | 每次生成存为一条记录，包含事实底稿、证据、缺失项、核验提示、调用日志、Agent 过程和草稿；状态机：草稿 → 待合规审核 → 已通过 / 已退回 → 修改后再提交 |
 | **反馈** | 逐句 👍/👎（附原因）；修改、删除、新增句子都留痕；「价值指标」面板统计修改率、删除率、一次通过率、生成时拦截分布、👎 原因分布 |
 | **人机协作** | AI 起草并标出不确定性；投顾编辑（保存即重新校验；点击事实编号可插入引用），逐条确认待确认项；合规审核通过或退回（退回必须填写意见）；通过后才生成定稿 |
-| **风险控制** | 数字占位符渲染、实体一致性校验、合规词表加 AI 语义复核、发布门禁、缺失不补齐、单 IP 限流（每小时 8 次）、全局并发上限 2 |
+| **风险控制** | 数字占位符渲染、实体一致性校验、合规词表加 AI 语义复核、发布门禁、缺失不补齐、单 IP 限流（默认每小时 8 次，线上 30 次）、全局并发上限（默认 3） |
 
 ### AI、系统、人的分工
 | 谁 | 负责 | 不负责 |
@@ -193,7 +193,8 @@ node scripts/smoke.mjs --simulate=llm_down,inject_violation  # 故障演练示�
 | `DEEPSEEK_MODEL` | 否 | 默认 `deepseek-chat`；`AGENT_MODEL` / `WRITER_MODEL` 可分别覆盖 |
 | `DEEPSEEK_BASE_URL` | 否 | 默认 `https://api.deepseek.com`，可换成其他 OpenAI 兼容服务 |
 | `IFIND_MCP_TOKEN` / `IFIND_MCP_BASE` | 否 | iFinD MCP 新闻检索 |
-| `RUNS_PER_IP_PER_HOUR` | 否 | 单 IP 每小时生成上限，默认 8 |
+| `RUNS_PER_IP_PER_HOUR` | 否 | 单 IP 每小时生成上限，默认 8（线上设为 30，便于同一办公网络的多位评审试用） |
+| `MAX_ACTIVE_RUNS` | 否 | 同时进行的生成任务上限，默认 3 |
 | `PORT` | 否 | 默认 3000 |
 
 部署：Render Web Service（Node 22，`npm install` / `node server.js`，健康检查 `/api/health`，新加坡区）。环境变量在 Render 控制台注入。
