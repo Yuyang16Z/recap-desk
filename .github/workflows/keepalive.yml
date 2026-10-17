@@ -1,0 +1,13 @@
+# Render 免费实例闲置 15 分钟会休眠，评审首次打开需要 30–60 秒唤醒；
+# 每 10 分钟访问一次健康检查接口，让演示实例保持可用（GitHub 定时任务可能有几分钟延迟）
+name: keepalive
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: curl -fsS --max-time 90 https://recap-desk.onrender.com/api/health
