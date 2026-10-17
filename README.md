@@ -4,7 +4,7 @@
 
 - **在线体验**：https://recap-desk.onrender.com（Render 免费实例，新加坡区；闲置后首次打开约需 30–60 秒唤醒。2026-10-18 用站长工具从国内 53 个节点 ping：域名正常解析，多数节点 150–270ms 可达，浙江杭州多线 163ms）
 - **源代码**：https://github.com/Yuyang16Z/recap-desk
-- **测试说明**：[docs/TESTING.md](docs/TESTING.md) · **AI 使用与验证记录**：[docs/AI_USAGE.md](docs/AI_USAGE.md)
+- **测试说明**：[docs/TESTING.md](docs/TESTING.md) · **AI 使用与验证记录**：[docs/AI_USAGE.md](docs/AI_USAGE.md) · **演示视频**：121 秒，用自动化浏览器操作线上实例录制，随笔试提交包提供
 - **数据**：同花顺金融数据（扶摇 API，12 类接口）+ iFinD MCP（新闻检索）；**模型**：DeepSeek（OpenAI 兼容接口，可换）
 
 ```
@@ -227,4 +227,4 @@ docs/                测试说明、AI 使用与验证记录
 - **AI 合规复核**只做提示，不作为放行依据。
 - **来源措辞**：模型偶尔会把 iFinD 新闻说成"异动解读"。依据编号指向的真实来源可以在右侧面板核对，但正文措辞仍需人工复核。
 - **评测**：还没有固定日期的回归评测集，样本量仅为开发期间的几次运行。
-- 未对接企业微信或 APP 推送等发布渠道；未录制演示视频。
+- 未对接企业微信或 APP 推送等发布渠道。

@@ -340,7 +340,7 @@ async function showMetrics() {
   modal(`<h2>价值指标（基于本实例的全部生成记录）</h2>
   <p class="hint">样本 ${m.runs} 份（含样例 ${m.samples} 份），另有 ${m.aborted} 次生成因上游失败被中止且未产出结论。演示环境样本量很小，这些数字只说明“怎么量”，不代表线上效果。</p>
   <h4>效率</h4><div class="mgrid">
-    ${card(`${m.avg_gen_seconds}s`, '平均生成用时', '点击生成到草稿就绪；对照人工收集数据+撰写约 60–90 分钟（访谈估计，待实测）')}
+    ${card(`${m.avg_gen_seconds}s`, '平均生成用时', '点击生成到草稿就绪；人工撰写的耗时基线尚未实测，验证方法见 README 第 7 节')}
     ${card(m.avg_tool_calls, '平均接口调用', `其中 Agent 自主调用 ${m.avg_agent_tool_calls} 次`)}
     ${card(pct(m.tool_failure_rate), '接口失败率', '失败后对应数据块标为缺失，不静默补齐')}
   </div>
