@@ -1,0 +1,1316 @@
+{
+  "generated_at": "2026-10-17T20:47:42.827Z",
+  "audience": "steady",
+  "model": "deepseek-chat",
+  "checklist": [
+    "上证指数涨跌幅",
+    "两市成交额",
+    "涨停家数",
+    "炸板或封板率",
+    "最高连板",
+    "第一大涨停题材",
+    "跌停家数",
+    "与前一交易日对比"
+  ],
+  "dates": [
+    "2026-10-16",
+    "2026-10-15",
+    "2026-10-14",
+    "2026-10-13",
+    "2026-10-12",
+    "2026-10-09",
+    "2026-10-08",
+    "2026-09-30"
+  ],
+  "aggregate": {
+    "runs": 8,
+    "ai_success": 8,
+    "avg_gen_s": 21.53,
+    "max_gen_s": 24,
+    "avg_tool_calls": 27,
+    "avg_agent_tool_calls": 9.25,
+    "tool_failures": 0,
+    "avg_tokens": 30469.88,
+    "blocks_before": 8,
+    "blocks_after": 2,
+    "repair": {
+      "attempted": 7,
+      "fixed": 6,
+      "deleted": 0,
+      "failed": 1
+    },
+    "flags_before": {
+      "unit_mismatch": 4,
+      "dup_ref": 2,
+      "entity_mismatch": 2,
+      "fact_has_inference": 2,
+      "untraced_number": 2
+    },
+    "drafts_with_zero_blocks_after": 7,
+    "avg_pending": 4,
+    "avg_sourced_ratio": 0.89,
+    "ai_coverage": 0.98,
+    "template_coverage": 1,
+    "ai_evidenced_inference": 1.38,
+    "template_evidenced_inference": 0,
+    "ai_sentences": 19.13,
+    "template_sentences": 11.75,
+    "hypotheses": 4,
+    "verdicts": {
+      "支持": 22,
+      "存疑": 1,
+      "部分支持": 9
+    },
+    "hypothesis_problems": 2
+  },
+  "results": [
+    {
+      "date": "2026-10-16",
+      "ai": {
+        "date": "2026-10-16",
+        "degraded": false,
+        "gen_s": 24,
+        "tool_calls": 35,
+        "agent_tool_calls": 12,
+        "tool_failures": 0,
+        "llm_calls": 6,
+        "tokens": 31330,
+        "facts": 68,
+        "evidence": 27,
+        "gaps": 0,
+        "dq": 0,
+        "sentences": 20,
+        "types": {
+          "fact": 13,
+          "inference": 4,
+          "pending": 3
+        },
+        "evidenced_inference": 1,
+        "sourced_ratio": 0.95,
+        "blocks_before": 1,
+        "flags_before": {
+          "unit_mismatch": 1,
+          "dup_ref": 1
+        },
+        "repair": {
+          "attempted": 1,
+          "fixed": 1,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 3,
+          "存疑": 1
+        },
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘：指数窄幅分化，涨停扩散但封板率回落"
+      },
+      "template": {
+        "date": "2026-10-16",
+        "degraded": true,
+        "gen_s": 2.9,
+        "tool_calls": 23,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 57,
+        "evidence": 9,
+        "gaps": 0,
+        "dq": 0,
+        "sentences": 11,
+        "types": {
+          "fact": 9,
+          "inference": 1,
+          "pending": 1
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.909,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 1,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    },
+    {
+      "date": "2026-10-15",
+      "ai": {
+        "date": "2026-10-15",
+        "degraded": false,
+        "gen_s": 23.2,
+        "tool_calls": 25,
+        "agent_tool_calls": 8,
+        "tool_failures": 0,
+        "llm_calls": 6,
+        "tokens": 31843,
+        "facts": 64,
+        "evidence": 27,
+        "gaps": 1,
+        "dq": 0,
+        "sentences": 16,
+        "types": {
+          "fact": 9,
+          "inference": 4,
+          "pending": 3
+        },
+        "evidenced_inference": 2,
+        "sourced_ratio": 0.875,
+        "blocks_before": 1,
+        "flags_before": {
+          "unit_mismatch": 1,
+          "dup_ref": 1
+        },
+        "repair": {
+          "attempted": 1,
+          "fixed": 1,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "部分支持": 2,
+          "支持": 2
+        },
+        "hypothesis_problems": 1,
+        "title": "{{DATE}}盘后复盘：指数普跌、成交额放大，涨停结构分化"
+      },
+      "template": {
+        "date": "2026-10-15",
+        "degraded": true,
+        "gen_s": 2.8,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 54,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 0,
+        "sentences": 11,
+        "types": {
+          "fact": 8,
+          "inference": 1,
+          "pending": 2
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.818,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 2,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    },
+    {
+      "date": "2026-10-14",
+      "ai": {
+        "date": "2026-10-14",
+        "degraded": false,
+        "gen_s": 18.7,
+        "tool_calls": 25,
+        "agent_tool_calls": 8,
+        "tool_failures": 0,
+        "llm_calls": 5,
+        "tokens": 27243,
+        "facts": 65,
+        "evidence": 25,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 19,
+        "types": {
+          "fact": 11,
+          "inference": 3,
+          "pending": 5
+        },
+        "evidenced_inference": 1,
+        "sourced_ratio": 0.895,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 5,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 3,
+          "部分支持": 1
+        },
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘：指数缩量普跌，传媒出版逆势活跃"
+      },
+      "template": {
+        "date": "2026-10-14",
+        "degraded": true,
+        "gen_s": 3,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 54,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 12,
+        "types": {
+          "fact": 8,
+          "inference": 1,
+          "pending": 3
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.75,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    },
+    {
+      "date": "2026-10-13",
+      "ai": {
+        "date": "2026-10-13",
+        "degraded": false,
+        "gen_s": 20.7,
+        "tool_calls": 25,
+        "agent_tool_calls": 8,
+        "tool_failures": 0,
+        "llm_calls": 6,
+        "tokens": 29567,
+        "facts": 66,
+        "evidence": 22,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 19,
+        "types": {
+          "fact": 11,
+          "inference": 3,
+          "pending": 5
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.842,
+        "blocks_before": 3,
+        "flags_before": {
+          "unit_mismatch": 1,
+          "entity_mismatch": 2,
+          "fact_has_inference": 1
+        },
+        "repair": {
+          "attempted": 2,
+          "fixed": 1,
+          "failed": 1,
+          "deleted": 0
+        },
+        "blocks_after": 2,
+        "warns_after": 1,
+        "pending": 5,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 3,
+          "部分支持": 1
+        },
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘：指数窄幅分化、量能温和放大，涨停结构呈低位修复特征"
+      },
+      "template": {
+        "date": "2026-10-13",
+        "degraded": true,
+        "gen_s": 3.4,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 54,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 12,
+        "types": {
+          "fact": 8,
+          "inference": 1,
+          "pending": 3
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.75,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    },
+    {
+      "date": "2026-10-12",
+      "ai": {
+        "date": "2026-10-12",
+        "degraded": false,
+        "gen_s": 20.1,
+        "tool_calls": 27,
+        "agent_tool_calls": 10,
+        "tool_failures": 0,
+        "llm_calls": 5,
+        "tokens": 25721,
+        "facts": 64,
+        "evidence": 24,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 19,
+        "types": {
+          "fact": 11,
+          "inference": 3,
+          "pending": 5
+        },
+        "evidenced_inference": 1,
+        "sourced_ratio": 0.895,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 5,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 2,
+          "部分支持": 2
+        },
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘：指数普跌、量能收缩，传媒方向逆势活跃"
+      },
+      "template": {
+        "date": "2026-10-12",
+        "degraded": true,
+        "gen_s": 2.2,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 52,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 12,
+        "types": {
+          "fact": 8,
+          "inference": 1,
+          "pending": 3
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.75,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    },
+    {
+      "date": "2026-10-09",
+      "ai": {
+        "date": "2026-10-09",
+        "degraded": false,
+        "gen_s": 21.7,
+        "tool_calls": 27,
+        "agent_tool_calls": 10,
+        "tool_failures": 0,
+        "llm_calls": 6,
+        "tokens": 30937,
+        "facts": 65,
+        "evidence": 26,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 18,
+        "types": {
+          "fact": 10,
+          "inference": 4,
+          "pending": 4
+        },
+        "evidenced_inference": 2,
+        "sourced_ratio": 0.778,
+        "blocks_before": 1,
+        "flags_before": {
+          "unit_mismatch": 1
+        },
+        "repair": {
+          "attempted": 1,
+          "fixed": 1,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 4,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 2,
+          "部分支持": 2
+        },
+        "hypothesis_problems": 1,
+        "title": "{{DATE}}盘后复盘：指数窄幅收红、成交额放大，传媒方向午后活跃"
+      },
+      "template": {
+        "date": "2026-10-09",
+        "degraded": true,
+        "gen_s": 3.1,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 54,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 12,
+        "types": {
+          "fact": 8,
+          "inference": 1,
+          "pending": 3
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.75,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    },
+    {
+      "date": "2026-10-08",
+      "ai": {
+        "date": "2026-10-08",
+        "degraded": false,
+        "gen_s": 21.8,
+        "tool_calls": 26,
+        "agent_tool_calls": 9,
+        "tool_failures": 0,
+        "llm_calls": 6,
+        "tokens": 34279,
+        "facts": 59,
+        "evidence": 31,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 20,
+        "types": {
+          "fact": 12,
+          "inference": 5,
+          "pending": 3
+        },
+        "evidenced_inference": 3,
+        "sourced_ratio": 0.9,
+        "blocks_before": 1,
+        "flags_before": {
+          "untraced_number": 1
+        },
+        "repair": {
+          "attempted": 1,
+          "fixed": 1,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 4
+        },
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘：指数普跌、情绪走弱，固态电池标签集中但强度与指数背离"
+      },
+      "template": {
+        "date": "2026-10-08",
+        "degraded": true,
+        "gen_s": 5.8,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 50,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 12,
+        "types": {
+          "fact": 8,
+          "inference": 1,
+          "pending": 3
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.75,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    },
+    {
+      "date": "2026-09-30",
+      "ai": {
+        "date": "2026-09-30",
+        "degraded": false,
+        "gen_s": 22,
+        "tool_calls": 26,
+        "agent_tool_calls": 9,
+        "tool_failures": 0,
+        "llm_calls": 6,
+        "tokens": 32839,
+        "facts": 65,
+        "evidence": 30,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 22,
+        "types": {
+          "fact": 15,
+          "inference": 3,
+          "pending": 4
+        },
+        "evidenced_inference": 1,
+        "sourced_ratio": 0.955,
+        "blocks_before": 1,
+        "flags_before": {
+          "untraced_number": 1,
+          "fact_has_inference": 1
+        },
+        "repair": {
+          "attempted": 1,
+          "fixed": 1,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 1,
+        "pending": 4,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "missed"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 0.875
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 3,
+          "部分支持": 1
+        },
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘：指数分化、地产链政策催化与高位股回落"
+      },
+      "template": {
+        "date": "2026-09-30",
+        "degraded": true,
+        "gen_s": 2.6,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 54,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 12,
+        "types": {
+          "fact": 8,
+          "inference": 1,
+          "pending": 3
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.75,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered"
+            }
+          ],
+          "ratio": 1
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    }
+  ]
+}

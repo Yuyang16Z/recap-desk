@@ -123,3 +123,24 @@ footer { text-align: center; color: var(--sub); font-size: 12px; padding: 16px; 
 
 @media (max-width: 1180px) { main { grid-template-columns: 240px minmax(0, 1fr); } .right { grid-column: 1 / -1; position: static; } }
 @media (max-width: 760px) { main { grid-template-columns: 1fr; padding: 10px 16px; } .top { padding: 10px 16px; } .gate .acts { margin-left: 0; } }
+
+.tag.ok { background: var(--fact-bg); color: var(--fact); }
+.hypo table, .modal .tbl table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.hypo th, .hypo td, .modal .tbl td { border-bottom: 1px solid #f0f2f5; padding: 6px 8px; text-align: left; vertical-align: top; }
+.hypo th { color: var(--sub); font-weight: 600; font-size: 12px; background: #fafbfc; }
+.hypo h3 .sub { display: block; font-weight: 400; margin-top: 2px; }
+.tbl { overflow-x: auto; }
+.verdict { font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 10px; white-space: nowrap; }
+.v-yes { background: var(--fact-bg); color: var(--fact); } .v-part { background: var(--inf-bg); color: var(--inf); }
+.v-no { background: var(--bad-bg); color: var(--bad); } .v-q { background: var(--pend-bg); color: var(--pend); }
+details.repair { font-size: 12px; color: var(--sub); margin: 4px 0 0 4px; }
+details.repair summary { cursor: pointer; color: var(--fact); }
+details.repair div { margin: 2px 0 0 12px; }
+.lv-block { background: var(--bad-bg); color: var(--bad); } .lv-warn { background: var(--warn-bg); color: var(--warn); }
+.row.form { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 4px; }
+.row.form input { flex: 1; min-width: 160px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.row.form select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+
+table.eval { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.eval th, table.eval td { border-bottom: 1px solid #f0f2f5; padding: 5px 6px; text-align: left; white-space: nowrap; }
+table.eval th { color: var(--sub); background: #fafbfc; }

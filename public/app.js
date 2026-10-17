@@ -28,7 +28,12 @@ function cnDate(d) { const [, m, dd] = d.split('-').map(Number); return `${m}月
 // 与服务端 verify.js 的 trimOverlap 保持一致：去掉占位符前后与渲染值重叠的字词
 function trimOverlap(prev, display, next) {
   let d = display;
-  for (let k = Math.min(4, d.length - 1); k >= 1; k--) if (prev.endsWith(d.slice(0, k))) { d = d.slice(k); break; }
+  let trimmed = false;
+  for (let k = Math.min(4, d.length - 1); k >= 1; k--) if (prev.endsWith(d.slice(0, k))) { d = d.slice(k); trimmed = true; break; }
+  if (!trimmed) {
+    const tail = prev.slice(-8);
+    for (let k = Math.min(6, d.length - 1); k >= 2; k--) if (tail.includes(d.slice(0, k))) { d = d.slice(k); break; }
+  }
   for (let k = Math.min(4, d.length - 1); k >= 1; k--) if (next.startsWith(d.slice(-k))) { d = d.slice(0, d.length - k); break; }
   return d;
 }
@@ -118,6 +123,7 @@ async function startRun() {
           if (s.tool_calls.length) line(`<span class="tag agent">Agent 第${s.round}轮</span> ${esc(s.thought || '')} → ${s.tool_calls.map((t) => `<code>${esc(t.name)}(${esc(JSON.stringify(t.args))})</code>`).join(' ')}`, 'agent');
           else if (s.thought) line(`<span class="tag agent">Agent 小结</span> ${esc(s.thought).replace(/\n/g, '<br>')}`, 'agent');
         } else if (ev.type === 'warn') line(`⚠ ${esc(ev.msg)}`, 'warn');
+        else if (ev.type === 'info') line(`ℹ ${esc(ev.msg)}`, 'info');
         else if (ev.type === 'error') {
           line(`✗ ${esc(ev.msg)}${ev.suggestion ? ` <button class="mini" data-sug="${esc(ev.suggestion)}">改用 ${esc(ev.suggestion)}</button>` : ''}`, 'error');
           const b = $('button[data-sug]', prog);
@@ -167,6 +173,7 @@ function render() {
     </div>
     <div class="meta">交易日 ${esc(run.trading.date)} · ${esc(AUD[run.input.audience])} · 生成于 ${fmtTime(run.created_at)} · 用时 ${(m.gen_ms / 1000).toFixed(1)}s · 接口 ${m.tool_calls} 次（Agent ${m.agent_tool_calls}）· 大模型 ${m.llm_calls} 次 · 事实 ${m.facts} 条 / 证据 ${m.evidence} 条
     ${run.input.simulate?.length ? `<br><span class="tag warn">故障演练：${run.input.simulate.map((s) => SIM[s] || s).join('、')}</span>` : ''}
+    ${run.repair?.attempted ? `<br><span class="tag ok">自动修复：${run.repair.attempted} 句未通过校验 → 修好 ${run.repair.fixed}、删除 ${run.repair.deleted}、未修好 ${run.repair.failed}（未修好的保留原句交人工）</span>` : ''}
     ${run.writer?.fallback ? `<br><span class="tag warn">大模型撰写失败（${esc(run.writer.error)}），已降级为纯数据底稿</span>` : ''}</div>
     <div class="gate">
       <div class="g ${g.block ? 'bad' : 'good'}"><b>${g.block}</b>阻断项</div>
@@ -174,11 +181,14 @@ function render() {
       <div class="g ${g.warn ? 'warnc' : ''}"><b>${g.warn}</b>提醒</div>
       <div class="g"><b>${Math.round((g.sourced_ratio || 0) * 100)}%</b>句子有依据</div>
       <div class="g ${run.gaps.length ? 'warnc' : 'good'}"><b>${run.gaps.length}</b>数据缺失</div>
+      ${run.coverage ? `<div class="g ${run.coverage.missed.length ? 'warnc' : 'good'}" title="${esc(run.coverage.missed.map((m) => `未提及：${m.hint}`).join('\n') || '关键事实清单全部覆盖')}"><b>${run.coverage.covered}/${run.coverage.applicable}</b>关键事实覆盖</div>` : ''}
       <div class="acts">${actions.join('')}</div>
     </div>
     ${roleHint}
+    ${run.coverage?.missed.length ? `<div class="hint">关键事实提醒（不阻断）：本稿未提及 ${run.coverage.missed.map((m) => `「${esc(m.name)}」（${esc(m.hint)}）`).join('、')}，请确认是否有意省略。</div>` : ''}
     ${run.review ? `<div class="review ${run.review.decision}">合规意见（${fmtTime(run.review.at)}）：${run.review.decision === 'approve' ? '通过' : '退回'}${run.review.comment ? ` —— ${esc(run.review.comment)}` : ''}</div>` : ''}
   </div>
+  ${renderHypotheses(run)}
   ${renderAgent(run)}
   ${run.draft.sections.map((sec) => `
     <div class="card section">
@@ -193,6 +203,27 @@ function render() {
   </div>`;
   bindRun(run, editable);
   renderSide();
+}
+
+function refChip(id, run) {
+  const f = run.facts.find((x) => x.id === id);
+  const e = run.evidence.find((x) => x.id === id);
+  const tip = f ? `${f.label}：${f.display}` : e ? `${e.stock || e.kind}：${e.text.slice(0, 80)}` : id;
+  return `<span class="ref" data-ref="${id}" title="${esc(tip)}">${id}${f ? ` ${esc(f.display)}` : ''}</span>`;
+}
+
+function renderHypotheses(run) {
+  const hs = run.agent?.hypotheses || [];
+  if (!hs.length) return '';
+  const V = { 支持: 'v-yes', 部分支持: 'v-part', 不支持: 'v-no', 存疑: 'v-q' };
+  return `<div class="card hypo"><h3>主线判断依据 <span class="sub">Agent 先提出判断、再找支持和反面证据；系统核对编号真实存在，证据不足的判断降为"存疑"。撰写只能按这里的结论落笔。</span></h3>
+    <div class="tbl"><table><thead><tr><th>判断</th><th>结论</th><th>支持证据</th><th>反证</th><th>待补证据</th></tr></thead><tbody>
+    ${hs.map((h) => `<tr><td>${esc(h.claim)}${h.problems?.length ? `<div class="flag warn">${esc(h.problems.join('；'))}</div>` : ''}</td>
+      <td><span class="verdict ${V[h.verdict] || ''}">${esc(h.verdict)}</span></td>
+      <td>${h.support.map((r) => refChip(r, run)).join(' ') || '—'}</td>
+      <td>${h.against.map((r) => refChip(r, run)).join(' ') || '—'}</td>
+      <td>${esc(h.gap || '—')}</td></tr>`).join('')}
+    </tbody></table></div></div>`;
 }
 
 function renderAgent(run) {
@@ -220,7 +251,8 @@ function renderSentence(s, run, editable) {
   }
   return `<div class="sent ${s.deleted ? 'deleted' : ''} ${s.flags?.some((f) => f.level === 'block') ? 'has-block' : ''}" data-sid="${s.id}">
     <div class="line"><span class="badge ${tc}">${tl}</span>${s.origin === 'human' ? '<span class="tag">人工</span>' : s.origin === 'injected' ? '<span class="tag warn">注入</span>' : ''}${s.edited ? '<span class="tag">已改</span>' : ''}
-      <span class="txt">${renderRich(s.text, run)}</span>${refs}</div>
+      ${repairTag(s)}<span class="txt">${renderRich(s.text, run)}</span>${refs}</div>
+    ${repairDetail(s, run)}
     ${s.deleted ? '' : flags + ai}
     ${s.type === 'pending' && s.pending_confirmed ? `<div class="flag ok">已人工确认保留${s.note ? `：${esc(s.note)}` : ''}</div>` : ''}
     <div class="ops">
@@ -231,6 +263,24 @@ function renderSentence(s, run, editable) {
       ${!s.deleted ? `<button class="mini fb ${fb?.rating === 'up' ? 'on' : ''}" data-op="up" title="这句有用">👍</button><button class="mini fb ${fb?.rating === 'down' ? 'on' : ''}" data-op="down" title="这句有问题">👎${fb?.rating === 'down' && fb.reason ? ` ${esc(fb.reason)}` : ''}</button>` : ''}
     </div>
   </div>`;
+}
+
+function repairTag(s) {
+  const r = s.repair;
+  if (!r) return '';
+  if (r.status === 'fixed') return '<span class="tag ok">AI 已自修复</span>';
+  if (r.status === 'deleted') return '<span class="tag warn">AI 已删除</span>';
+  return '<span class="tag warn">自修复未通过</span>';
+}
+function repairDetail(s, run) {
+  const r = s.repair;
+  if (!r) return '';
+  return `<details class="repair"><summary>查看自修复记录</summary>
+    <div>修复前：${esc(plain(r.before.text, run))}</div>
+    <div>当时的问题：${esc((r.before.problems || []).join('；'))}</div>
+    ${r.reason ? `<div>模型说明：${esc(r.reason)}</div>` : ''}
+    ${r.status === 'failed' && r.attempt ? `<div>修订稿（未采用）：${esc(plain(r.attempt, run))}</div><div>修订后仍存在：${esc((r.remaining || []).join('；'))}</div>` : ''}
+  </details>`;
 }
 
 function bindRun(run, editable) {
@@ -348,6 +398,7 @@ async function showMetrics() {
     ${card(pct(m.avg_sourced_ratio), '句子有依据比例', '引用了至少一个底稿编号的句子 ÷ 总句数')}
     ${card(m.avg_facts, '平均事实条数', '每条都能回到接口字段、时点与口径')}
     ${card(Object.entries(m.initial_flags).map(([k, v]) => `${k}:${v}`).join(' ') || '0', '生成时拦截的问题', '按规则统计：未溯源数字、预测、荐股、收益承诺等')}
+    ${card(m.repair ? `${m.repair.fixed}/${m.repair.attempted}` : '—', 'AI 自修复（修好/尝试）', m.repair ? `阻断项：自修复前 ${m.blocks_before_repair} → 自修复后 ${m.blocks_after_repair}；删除 ${m.repair.deleted} 句；修不好的保留原句交人工` : '')}
   </div>
   <h4>人机协作</h4><div class="mgrid">
     ${card(`${m.submitted}/${m.approved}`, '已提交/已通过', '提交前必须清零阻断项')}
@@ -355,8 +406,82 @@ async function showMetrics() {
     ${card(pct(m.edit_rate), 'AI 句子修改率', `已提交稿件中被人修改的 AI 句子比例；删除率 ${pct(m.delete_rate)}，人工新增 ${m.human_added} 句`)}
     ${card(`${m.feedback_up}/${m.feedback_down}`, '逐句反馈 👍/👎', Object.entries(m.feedback_down_reasons).map(([k, v]) => `${k}×${v}`).join('，') || '暂无差评原因')}
     ${card(m.llm_fallback_runs, '降级次数', '大模型不可用时改出纯数据底稿')}
+    ${card(`${m.team_rules}/${m.team_preferences}`, '团队规则 / 写作偏好', '来自合规退回与投顾反馈，立即作用于校验和后续生成')}
   </div>`);
 }
+async function showEval() {
+  let e;
+  try { e = await api('/api/eval'); } catch (err) { modal(`<h2>评测报告</h2><p class="hint">${esc(err.message)}</p>`); return; }
+  const a = e.aggregate;
+  const pct = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`);
+  const card = (v, k, d) => `<div class="mcard"><b>${v}</b><span>${k}</span><small>${d}</small></div>`;
+  const flags = Object.entries(a.flags_before || {}).sort((x, y) => y[1] - x[1]).map(([k, v]) => `${k}×${v}`).join('，') || '无';
+  const verdicts = Object.entries(a.verdicts || {}).map(([k, v]) => `${k}${v}`).join('、') || '—';
+  const rows = e.results.map((r) => {
+    if (!r.ai || r.ai.error) return `<tr><td>${esc(r.date)}</td><td colspan="8" class="no">失败：${esc(r.ai?.error || '')}</td></tr>`;
+    const x = r.ai;
+    const t = r.template && !r.template.error ? r.template : null;
+    return `<tr><td>${esc(r.date)}</td><td>${x.gen_s}s</td><td>${x.tool_calls}（${x.agent_tool_calls}）</td><td>${x.blocks_before} → ${x.blocks_after}</td>
+      <td>${x.repair?.fixed || 0}/${x.repair?.attempted || 0}</td><td>${x.pending}</td><td>${pct(x.coverage.ratio)}${t ? ` <span class="sub">模板 ${pct(t.coverage.ratio)}</span>` : ''}</td>
+      <td>${x.evidenced_inference}${t ? ` <span class="sub">模板 ${t.evidenced_inference}</span>` : ''}</td><td>${x.gaps}</td></tr>`;
+  }).join('');
+  modal(`<h2>评测报告：最近 ${e.dates.length} 个交易日</h2>
+  <p class="hint">离线脚本 <code>scripts/eval.mjs</code> 生成于 ${esc(new Date(e.generated_at).toLocaleString('zh-CN', { hour12: false }))}。每个交易日用真实接口完整生成一次（受众：${esc(AUD[e.audience] || e.audience)}，模型：${esc(e.model)}），再用“大模型不可用”的模板稿作对照。只有 ${e.dates.length} 个交易日，结论只代表这一小段行情。</p>
+  <h4>护栏是否生效</h4><div class="mgrid">
+    ${card(`${a.blocks_before} → ${a.blocks_after}`, '阻断项：自修复前 → 后', `生成时拦截：${esc(flags)}`)}
+    ${card(`${a.repair.fixed}/${a.repair.attempted}`, 'AI 自修复（修好/尝试）', `另删除 ${a.repair.deleted} 句；修不好的 ${a.repair.failed} 句保留原句交人工`)}
+    ${card(`${a.drafts_with_zero_blocks_after}/${a.runs}`, '修复后零阻断的草稿', '剩余工作只是确认“待确认”句')}
+    ${card(a.avg_pending, '平均待确认句', '数据缺失、冲突或证据不足时，系统要求人工确认')}
+  </div>
+  <h4>AI 相对模板稿的增量</h4><div class="mgrid">
+    ${card(`${pct(a.ai_coverage)} / ${pct(a.template_coverage)}`, '关键事实覆盖率（AI / 模板）', `清单：${esc(e.checklist.join('、'))}`)}
+    ${card(`${a.ai_evidenced_inference} / ${a.template_evidenced_inference}`, '带证据的归因句（AI / 模板）', '推断句且引用了异动解读、新闻等文本证据')}
+    ${card(a.hypotheses, '平均主线判断条数', `结论分布：${esc(verdicts)}；引用问题 ${a.hypothesis_problems} 条`)}
+    ${card(pct(a.avg_sourced_ratio), '句子有依据比例', '引用了至少一个底稿编号的句子占比')}
+  </div>
+  <h4>成本与稳定性</h4><div class="mgrid">
+    ${card(`${a.avg_gen_s}s`, '平均生成用时', `最长 ${a.max_gen_s}s`)}
+    ${card(a.avg_tool_calls, '平均接口调用', `其中 Agent 自主 ${a.avg_agent_tool_calls} 次；失败 ${a.tool_failures} 次`)}
+    ${card(a.avg_tokens, '平均 token', '每篇含 Agent、撰写、自修复的全部调用')}
+    ${card(`${a.ai_success}/${a.runs}`, 'AI 生成成功', '未降级为模板稿的次数')}
+  </div>
+  <h4>逐日明细</h4>
+  <div class="tbl"><table class="eval"><thead><tr><th>交易日</th><th>用时</th><th>调用（Agent）</th><th>阻断 前→后</th><th>自修复</th><th>待确认</th><th>覆盖率</th><th>带证据归因</th><th>缺失项</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="hint">历史交易日没有收盘口径的全市场涨跌家数（快照接口只给最新行情），所以“缺失项”至少为 1，对应句子写成待确认。</p>`);
+}
+
+const BUILTIN = [
+  ['确定性预测或未来走势判断', '阻断', '如"有望""明日""后市""目标价"'],
+  ['买卖或仓位建议', '阻断', '如"建议关注""逢低布局""加仓"'],
+  ['收益承诺或保本暗示', '阻断', '如"稳赚""保本""无风险"'],
+  ['未溯源数字', '阻断', '正文数字必须写成 {{F编号}}，由系统渲染'],
+  ['张冠李戴', '阻断', '个股事实只能用在该个股身上'],
+  ['事实或推断没有依据编号', '阻断', '每句都要回到底稿'],
+  ['夸张或煽动性措辞', '提醒', '如"暴涨""妖股""千载难逢"'],
+  ['推断缺少不确定措辞 / 事实句夹带判断', '提醒', '避免把推断读成结论'],
+];
+async function showRules() {
+  const cfg = await api('/api/config');
+  const isComp = state.role === '合规';
+  const fmt = (ms) => (ms ? new Date(ms).toLocaleDateString('zh-CN') : '');
+  modal(`<h2>规则库与写作偏好</h2>
+  <p class="hint">反馈闭环：合规把退回原因沉淀为禁用表述，投顾把反复修改的写法沉淀为写作偏好。新增后立即作用于所有草稿的校验（打开草稿时按最新规则重算），并写进之后每次生成的撰写提示词，从源头减少同类问题。</p>
+  <h4>内置合规规则（代码维护）</h4>
+  <div class="tbl"><table><tbody>${BUILTIN.map(([n, l, d]) => `<tr><td>${esc(n)}</td><td><span class="badge ${l === '阻断' ? 'lv-block' : 'lv-warn'}">${l}</span></td><td class="sub">${esc(d)}</td></tr>`).join('')}</tbody></table></div>
+  <h4>团队禁用表述（${cfg.rules.length}）</h4>
+  <div class="tbl"><table><tbody>${cfg.rules.map((r) => `<tr><td>「${esc(r.phrase)}」</td><td><span class="badge ${r.level === 'warn' ? 'lv-warn' : 'lv-block'}">${r.level === 'warn' ? '提醒' : '阻断'}</span></td><td class="sub">${esc(r.reason || '')} · ${esc(r.created_by || '')} ${fmt(r.created_at)}</td><td>${isComp ? `<button class="mini" data-del-rule="${r.id}">删除</button>` : ''}</td></tr>`).join('') || '<tr><td class="sub">暂无</td></tr>'}</tbody></table></div>
+  ${isComp ? `<div class="row form"><input id="rPhrase" placeholder="禁用表述，如：确定性机会"><select id="rLevel"><option value="block">阻断</option><option value="warn">提醒</option></select><input id="rReason" placeholder="原因（可选）"><button class="primary mini" id="rAdd">加入规则库</button></div>` : '<p class="hint">切换为「合规审核」角色后可以新增或删除禁用表述。</p>'}
+  <h4>写作偏好（${cfg.preferences.length}）</h4>
+  <div class="tbl"><table><tbody>${cfg.preferences.map((p) => `<tr><td>${esc(p.text)}</td><td class="sub">${esc(p.created_by || '')} ${fmt(p.created_at)}</td><td><button class="mini" data-del-pref="${p.id}">删除</button></td></tr>`).join('') || '<tr><td class="sub">暂无</td></tr>'}</tbody></table></div>
+  <div class="row form"><input id="pText" placeholder="写作偏好，如：成交额变化放在第一节开头"><button class="primary mini" id="pAdd">添加偏好</button></div>`);
+  const after = async () => { if (state.run) { try { state.run = await api(`/api/runs/${state.run.id}`); render(); } catch { /* 记录可能已被清空 */ } } showRules(); };
+  const run = async (fn) => { try { await fn(); await after(); } catch (e) { toast(e.message, true); } };
+  if ($('#rAdd')) $('#rAdd').onclick = () => run(() => api('/api/config/rules', { method: 'POST', body: { phrase: $('#rPhrase').value, level: $('#rLevel').value, reason: $('#rReason').value, actor: state.role } }));
+  $$('[data-del-rule]').forEach((b) => b.onclick = () => run(() => api(`/api/config/rules/${b.dataset.delRule}?actor=${encodeURIComponent(state.role)}`, { method: 'DELETE' })));
+  $('#pAdd').onclick = () => run(() => api('/api/config/preferences', { method: 'POST', body: { text: $('#pText').value, actor: state.role } }));
+  $$('[data-del-pref]').forEach((b) => b.onclick = () => run(() => api(`/api/config/preferences/${b.dataset.delPref}`, { method: 'DELETE' })));
+}
+
 function showAbout() {
   modal(`<h2>产品说明</h2>
   <p><b>给谁用：</b>券商/投顾机构的持牌投资顾问（每个交易日收盘后要给客户群写复盘），以及审核这些内容的合规岗。</p>
@@ -379,6 +504,8 @@ $$('.tabs button').forEach((b) => b.onclick = () => { state.tab = b.dataset.tab;
 $('#btnRun').onclick = startRun;
 $('#btnMetrics').onclick = showMetrics;
 $('#btnAbout').onclick = showAbout;
+$('#btnRules').onclick = showRules;
+$('#btnEval').onclick = showEval;
 (async () => {
   try {
     const td = await api('/api/trading-date');

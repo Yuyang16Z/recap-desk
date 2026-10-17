@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
@@ -5,7 +6,7 @@ import { loadEnv } from './lib/env.js';
 import { Store } from './lib/store.js';
 import { runPipeline, nextSentenceId } from './lib/pipeline.js';
 import { resolveTradingDate, UserError } from './lib/collect.js';
-import { verifySentence, computeGate, renderText, entityNames } from './lib/verify.js';
+import { verifySentence, computeGate, renderText, entityNames, coverage } from './lib/verify.js';
 import { aiComplianceReview } from './lib/agent.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -31,6 +32,7 @@ function allow(ip) {
 }
 const SIMULATIONS = ['fuyao:limit_up_pool', 'fuyao:index_kline', 'fuyao:limit_up_statistics', 'fuyao:anomaly_analysis', 'llm_down', 'stale_stats', 'inject_violation'];
 const EDITABLE = new Set(['draft', 'returned']);
+const rules = () => store.config?.rules || [];
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, fuyao: !!process.env.FUYAO_API_KEY, llm: !!process.env.DEEPSEEK_API_KEY, model: process.env.DEEPSEEK_MODEL || 'deepseek-chat', runs: store.runs.size });
@@ -78,6 +80,40 @@ app.post('/api/runs', async (req, res) => {
 
 app.get('/api/runs', (req, res) => res.json(store.list()));
 
+// ---------- 团队规则库与写作偏好：反馈闭环 ----------
+// 合规新增的禁用表述立即参与所有草稿校验（读取草稿时按最新规则重算），并写入之后每次生成的撰写提示词
+app.get('/api/config', (req, res) => res.json(store.config));
+app.post('/api/config/rules', (req, res) => {
+  const { phrase = '', level = 'block', reason = '', actor = '合规' } = req.body || {};
+  const p = String(phrase).trim().slice(0, 30);
+  if (!p) return res.status(400).json({ error: '禁用表述不能为空' });
+  if (actor !== '合规') return res.status(403).json({ error: '只有合规审核角色可以新增团队规则' });
+  if (store.config.rules.some((r) => r.phrase === p)) return res.status(409).json({ error: `「${p}」已在规则库中` });
+  const id = `R${Date.now().toString(36)}`;
+  store.config.rules.push({ id, phrase: p, level: level === 'warn' ? 'warn' : 'block', reason: String(reason).slice(0, 80), created_by: actor, created_at: Date.now() });
+  store.saveConfig();
+  res.json(store.config);
+});
+app.delete('/api/config/rules/:id', (req, res) => {
+  if ((req.query.actor || '合规') !== '合规') return res.status(403).json({ error: '只有合规审核角色可以删除团队规则' });
+  store.config.rules = store.config.rules.filter((r) => r.id !== req.params.id);
+  store.saveConfig();
+  res.json(store.config);
+});
+app.post('/api/config/preferences', (req, res) => {
+  const { text = '', actor = '投顾' } = req.body || {};
+  const t = String(text).trim().slice(0, 80);
+  if (!t) return res.status(400).json({ error: '写作偏好不能为空' });
+  store.config.preferences.push({ id: `P${Date.now().toString(36)}`, text: t, created_by: actor, created_at: Date.now() });
+  store.saveConfig();
+  res.json(store.config);
+});
+app.delete('/api/config/preferences/:id', (req, res) => {
+  store.config.preferences = store.config.preferences.filter((p) => p.id !== req.params.id);
+  store.saveConfig();
+  res.json(store.config);
+});
+
 function getRun(req, res) {
   const run = store.get(req.params.id);
   if (!run) res.status(404).json({ error: '记录不存在（免费实例重启后运行时记录会清空，样例记录除外）' });
@@ -89,8 +125,9 @@ app.get('/api/runs/:id', (req, res) => {
   // 可编辑的草稿按当前规则重算校验结果，避免规则升级后页面显示过期的门禁状态
   if (EDITABLE.has(run.status) && run.draft) {
     const names = entityNames(run);
-    for (const sec of run.draft.sections) for (const s of sec.sentences) s.flags = verifySentence(s, run, names);
+    for (const sec of run.draft.sections) for (const s of sec.sentences) s.flags = verifySentence(s, run, names, rules());
     run.gate = computeGate(run.draft);
+    run.coverage = coverage(run.draft, run);
   }
   res.json(run);
 });
@@ -129,8 +166,9 @@ app.patch('/api/runs/:id/sentences/:sid', (req, res) => {
     if (['fact', 'inference', 'pending'].includes(type) && type !== s.type) { s.type = type; s.pending_confirmed = false; }
     s.ai_flags = [];
   }
-  s.flags = verifySentence(s, run, entityNames(run));
+  s.flags = verifySentence(s, run, entityNames(run), rules());
   run.gate = computeGate(run.draft);
+  run.coverage = coverage(run.draft, run);
   run.audit.push({ at: Date.now(), actor, action: action || 'edit', sid: s.id, detail: action ? `${s.id} ${action}${note ? `：${note}` : ''}` : `${s.id} 修改：「${before.slice(0, 30)}」→「${s.text.slice(0, 30)}」` });
   store.save(run);
   res.json(run);
@@ -143,7 +181,7 @@ app.post('/api/runs/:id/sentences', (req, res) => {
   const sec = run.draft.sections.find((x) => x.id === section_id);
   if (!sec || !text.trim()) return res.status(400).json({ error: '需要指定章节和句子内容' });
   const s = { id: nextSentenceId(run.draft), text: text.trim().slice(0, 500), type: ['fact', 'inference', 'pending'].includes(type) ? type : 'fact', refs: [], origin: 'human' };
-  s.flags = verifySentence(s, run, entityNames(run));
+  s.flags = verifySentence(s, run, entityNames(run), rules());
   sec.sentences.push(s);
   run.gate = computeGate(run.draft);
   run.audit.push({ at: Date.now(), actor, action: 'add', sid: s.id, detail: `${s.id} 新增：「${s.text.slice(0, 30)}」` });
@@ -186,7 +224,7 @@ app.post('/api/runs/:id/submit', (req, res) => {
   const run = getRun(req, res);
   if (!run || !guardEditable(run, res)) return;
   const names = entityNames(run);
-  for (const sec of run.draft.sections) for (const s of sec.sentences) s.flags = verifySentence(s, run, names);
+  for (const sec of run.draft.sections) for (const s of sec.sentences) s.flags = verifySentence(s, run, names, rules());
   run.gate = computeGate(run.draft);
   if (!run.gate.can_submit) {
     // 按最新规则重算的结果要落盘：规则升级后，存量草稿在提交时会暴露新的阻断项
@@ -244,6 +282,15 @@ app.get('/api/runs/:id/export', (req, res) => {
   res.type('text/plain; charset=utf-8').send(text);
 });
 
+// 多日离线评测结果（scripts/eval.mjs 生成，随仓库发布）
+app.get('/api/eval', (req, res) => {
+  try {
+    res.type('application/json').send(fs.readFileSync(path.join(ROOT, 'data/eval/latest.json'), 'utf8'));
+  } catch {
+    res.status(404).json({ error: '还没有评测结果：运行 node scripts/eval.mjs 生成' });
+  }
+});
+
 app.get('/api/metrics', (req, res) => {
   const runs = [...store.runs.values()].filter((r) => r.draft);
   const n = runs.length || 1;
@@ -266,6 +313,9 @@ app.get('/api/metrics', (req, res) => {
   const fb = runs.flatMap((r) => r.feedback || []);
   const reasons = {};
   fb.filter((f) => f.rating === 'down').forEach((f) => { reasons[f.reason || '未填写'] = (reasons[f.reason || '未填写'] || 0) + 1; });
+  const repairs = runs.filter((r) => r.repair);
+  const sumRepair = (k) => repairs.reduce((a, r) => a + (r.repair[k] || 0), 0);
+  const blocksOf = (flags) => Object.entries(flags || {}).filter(([k]) => ['untraced_number', 'entity_mismatch', 'unit_mismatch', 'unknown_ref', 'fact_no_source', 'inference_no_basis', 'predict', 'advice', 'promise', 'custom'].includes(k)).reduce((a, [, v]) => a + v, 0);
   const calls = runs.reduce((a, r) => a + (r.metrics?.tool_calls || 0), 0);
   const failed = runs.reduce((a, r) => a + (r.metrics?.tool_failures || 0), 0);
   res.json({
@@ -280,6 +330,11 @@ app.get('/api/metrics', (req, res) => {
     avg_facts: avg((r) => r.metrics?.facts),
     avg_sourced_ratio: avg((r) => r.gate?.sourced_ratio),
     initial_flags: flags,
+    repair: { runs: repairs.length, attempted: sumRepair('attempted'), fixed: sumRepair('fixed'), deleted: sumRepair('deleted'), failed: sumRepair('failed') },
+    blocks_before_repair: repairs.reduce((a, r) => a + blocksOf(r.initial_flags), 0),
+    blocks_after_repair: repairs.reduce((a, r) => a + blocksOf(r.final_flags), 0),
+    team_rules: store.config.rules.length,
+    team_preferences: store.config.preferences.length,
     submitted: reviewed.length,
     approved: approved.length,
     first_pass_approval: approved.length ? +(approved.filter((r) => !r.returns).length / approved.length).toFixed(2) : null,
