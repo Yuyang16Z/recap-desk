@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -140,6 +141,10 @@ function findSentence(run, sid) {
   return null;
 }
 function guardEditable(run, res) {
+  if (run.is_sample) {
+    res.status(409).json({ error: '这是所有人共享的样例，为只读；请先点「复制一份自己用」再修改' });
+    return false;
+  }
   if (EDITABLE.has(run.status)) return true;
   res.status(409).json({ error: `当前状态（${statusLabel(run.status)}）不可编辑；被合规退回后才能继续修改` });
   return false;
@@ -152,6 +157,8 @@ app.patch('/api/runs/:id/sentences/:sid', (req, res) => {
   const s = findSentence(run, req.params.sid);
   if (!s) return res.status(404).json({ error: '句子不存在' });
   const { text, type, action, note, actor = '投顾' } = req.body || {};
+  if (action !== undefined && !['delete', 'restore', 'confirm_pending', 'dismiss_ai'].includes(action)) return res.status(400).json({ error: `不支持的操作：${String(action).slice(0, 20)}` });
+  if (text !== undefined && typeof text !== 'string') return res.status(400).json({ error: 'text 必须是字符串' });
   const before = s.text;
   if (action === 'delete') s.deleted = true;
   else if (action === 'restore') s.deleted = false;
@@ -174,6 +181,26 @@ app.patch('/api/runs/:id/sentences/:sid', (req, res) => {
   res.json(run);
 });
 
+// 共享样例只读：复制一份独立草稿供评审体验修改与审批，不重新调用任何接口
+app.post('/api/runs/:id/clone', (req, res) => {
+  const src = getRun(req, res);
+  if (!src) return;
+  const run = JSON.parse(JSON.stringify(src));
+  run.id = crypto.randomUUID().slice(0, 8);
+  run.created_at = Date.now();
+  run.is_sample = false;
+  run.cloned_from = src.id;
+  run.status = 'draft';
+  for (const k of ['review', 'final_text', 'submitted_at', 'approved_at', 'submit_count', 'returns']) delete run[k];
+  run.feedback = [];
+  run.audit = [
+    ...(src.audit || []).filter((a) => ['generate', 'repair'].includes(a.action)),
+    { at: Date.now(), actor: '系统', action: 'clone', detail: `从样例 ${src.id} 复制，数据与校验结果保持一致，未重新调用接口` },
+  ];
+  store.save(run);
+  res.json(run);
+});
+
 // 编辑时的实时校验：只计算，不保存，供前端边写边看问题
 app.post('/api/runs/:id/preview', (req, res) => {
   const run = getRun(req, res);
@@ -189,7 +216,7 @@ app.post('/api/runs/:id/sentences', (req, res) => {
   if (!run || !guardEditable(run, res)) return;
   const { section_id, text = '', type = 'fact', actor = '投顾' } = req.body || {};
   const sec = run.draft.sections.find((x) => x.id === section_id);
-  if (!sec || !text.trim()) return res.status(400).json({ error: '需要指定章节和句子内容' });
+  if (!sec || typeof text !== 'string' || !text.trim()) return res.status(400).json({ error: '需要指定章节和句子内容' });
   const s = { id: nextSentenceId(run.draft), text: text.trim().slice(0, 500), type: ['fact', 'inference', 'pending'].includes(type) ? type : 'fact', refs: [], origin: 'human' };
   s.flags = verifySentence(s, run, entityNames(run), rules());
   sec.sentences.push(s);
@@ -202,8 +229,10 @@ app.post('/api/runs/:id/sentences', (req, res) => {
 app.post('/api/runs/:id/feedback', (req, res) => {
   const run = getRun(req, res);
   if (!run) return;
+  if (run.is_sample) return res.status(409).json({ error: '这是所有人共享的样例，为只读；请先点「复制一份自己用」再反馈' });
   const { sid, rating, reason = '' } = req.body || {};
   if (!['up', 'down'].includes(rating)) return res.status(400).json({ error: 'rating 只能是 up / down' });
+  if (!findSentence(run, sid)) return res.status(404).json({ error: '句子不存在' });
   run.feedback.push({ at: Date.now(), sid, rating, reason: String(reason).slice(0, 40) });
   run.audit.push({ at: Date.now(), actor: '投顾', action: 'feedback', sid, detail: `${sid} ${rating === 'up' ? '有用' : '无用'}${reason ? `：${reason}` : ''}` });
   store.save(run);

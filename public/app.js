@@ -11,7 +11,7 @@ const SIM = { 'fuyao:limit_up_pool': '涨停池失败', 'fuyao:index_kline': '�
 const REASONS = ['数字错误', '归因牵强', '不合规', '表达啰嗦', '遗漏重点'];
 const ROLE_TIP = { 投顾: '已切换为投资顾问：可以编辑句子、确认待确认项、提交合规审核', 合规: '已切换为合规审核：可以审核通过或退回、维护规则库' };
 const fmtTime = (ms) => new Date(ms).toLocaleString('zh-CN', { hour12: false });
-const editable = () => state.run && ['draft', 'returned'].includes(state.run.status) && state.role === '投顾';
+const editable = () => state.run && !state.run.is_sample && ['draft', 'returned'].includes(state.run.status) && state.role === '投顾';
 
 async function api(path, opts = {}) {
   const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
@@ -200,7 +200,8 @@ function render() {
   if (state.role === '合规' && run.status === 'in_review') acts.push('<button data-act="return" class="ghost danger">退回修改</button>');
   acts.push(primaryAction(run), '<button data-act="copy" class="ghost">复制全文</button>', '<button data-act="export" class="ghost">导出文本</button>');
   let roleHint = '';
-  if (run.status === 'in_review' && state.role === '投顾') roleHint = '已提交，等待合规审核：右上角切换为「合规审核」角色可继续体验审批。';
+  if (run.is_sample) roleHint = '';
+  else if (run.status === 'in_review' && state.role === '投顾') roleHint = '已提交，等待合规审核：右上角切换为「合规审核」角色可继续体验审批。';
   else if (['draft', 'returned'].includes(run.status) && state.role === '合规') roleHint = '当前为草稿，需投资顾问提交后才能审核；你可以先打开「规则库」维护禁用表述。';
   else if (run.status === 'approved') roleHint = '已审核通过，定稿在页面底部，可直接复制发布。';
   const why = ed && !g.can_submit ? `<div class="gate-why">还差 ${g.block ? `<a data-jump="block">${g.block} 个阻断项</a>` : ''}${g.block && g.pending_unresolved ? '、' : ''}${g.pending_unresolved ? `<a data-jump="pending">${g.pending_unresolved} 条待确认</a>` : ''}，处理完才能提交合规审核。</div>` : '';
@@ -228,7 +229,7 @@ function render() {
       ${cov ? `<div class="g ${cov.missed.length ? 'warnc' : 'good'}" title="${esc(cov.missed.map((x) => `未提及：${x.hint}`).join('\n') || '关键事实清单全部覆盖')}"><b>${cov.covered}/${cov.applicable}</b>关键事实覆盖</div>` : ''}
       <div class="acts">${acts.join('')}</div>
     </div>
-    ${why}
+    ${run.is_sample ? '<div class="sample-bar">这是所有人共享的真实数据样例，为只读。想体验修改、确认与审批流程，请先 <button class="primary mini" data-act="clone">复制一份自己用</button></div>' : why}
     ${roleHint ? `<div class="hint">${roleHint}</div>` : ''}
     ${cov?.missed.length ? `<div class="hint">关键事实提醒（不阻断）：本稿未提及 ${cov.missed.map((x) => `「${esc(x.name)}」（${esc(x.hint)}）`).join('、')}，请确认是否有意省略。</div>` : ''}
     ${run.review ? `<div class="review ${esc(run.review.decision)}">合规意见（${fmtTime(run.review.at)}）：${run.review.decision === 'approve' ? '通过' : '退回'}${run.review.comment ? ` —— ${esc(run.review.comment)}` : ''}</div>` : ''}
@@ -354,7 +355,7 @@ function renderSentence(s, run, ed) {
       ${ed && s.type === 'pending' && !s.pending_confirmed && !s.deleted ? '<button class="mini" data-op="confirm">确认保留</button>' : ''}
       ${ed && (s.ai_flags || []).some((f) => !f.dismissed) ? '<button class="mini" data-op="dismiss">忽略 AI 提示</button>' : ''}
       ${ed ? `<button class="mini" data-op="${s.deleted ? 'restore' : 'delete'}">${s.deleted ? '恢复' : '删除'}</button>` : ''}
-      ${!s.deleted ? `<button class="mini fb ${fb?.rating === 'up' ? 'on' : ''}" data-op="up" title="这句有用">👍</button><button class="mini fb ${fb?.rating === 'down' ? 'on' : ''}" data-op="down" title="这句有问题">👎${fb?.rating === 'down' && fb.reason ? ` ${esc(fb.reason)}` : ''}</button>` : ''}
+      ${!s.deleted && !run.is_sample ? `<button class="mini fb ${fb?.rating === 'up' ? 'on' : ''}" data-op="up" title="这句有用">👍</button><button class="mini fb ${fb?.rating === 'down' ? 'on' : ''}" data-op="down" title="这句有问题">👎${fb?.rating === 'down' && fb.reason ? ` ${esc(fb.reason)}` : ''}</button>` : ''}
     </div>
   </div>`;
 }
@@ -462,6 +463,16 @@ function bindRun(run, ed) {
       if (text) navigator.clipboard.writeText(text).then(() => toast(run.final_text ? '定稿已复制' : '草稿全文已复制（带“未审核”标记）'), () => toast('复制失败，请改用“导出文本”', true));
     } else if (name === 'copyFinal') navigator.clipboard.writeText(run.final_text).then(() => toast('定稿已复制'));
     else if (name === 'next') nextIssue();
+    else if (name === 'clone') {
+      try {
+        const copy = await api(`/api/runs/${run.id}/clone`, { method: 'POST', body: {} });
+        state.run = copy;
+        Object.assign(state, { editing: null, inline: null, adding: null, issueIdx: -1, centerTab: 'draft' });
+        render();
+        await loadRuns();
+        toast('已复制为你的草稿，可以开始修改、确认和提交');
+      } catch (e) { toast(e.message, true); }
+    }
   };
   $$('[data-act]', root).forEach((b) => { b.onclick = act(b.dataset.act); });
 

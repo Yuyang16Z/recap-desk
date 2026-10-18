@@ -36,6 +36,8 @@ before(async () => {
   fs.symlinkSync(path.join(ROOT, 'node_modules'), path.join(dir, 'node_modules'), 'dir');
   fs.mkdirSync(path.join(dir, 'data/runtime/runs'), { recursive: true });
   fs.writeFileSync(path.join(dir, 'data/runtime/runs', `${RUN_ID}.json`), JSON.stringify(fakeRun()));
+  fs.mkdirSync(path.join(dir, 'data/samples'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'data/samples', 'sample.json'), JSON.stringify({ ...fakeRun(), id: 'sample01', audit: [{ at: 1, actor: 'AI', action: 'generate', detail: '生成草稿' }] }));
   const port = 40000 + Math.floor(Math.random() * 20000);
   base = `http://127.0.0.1:${port}`;
   const off = 'http://127.0.0.1:9';
@@ -138,4 +140,36 @@ test('生成接口限流：同一 IP 超过 RUNS_PER_IP_PER_HOUR（测试设为 
   const third = await api('POST', '/api/runs', {});
   assert.equal(third.status, 429);
   assert.match(third.data.error, /每小时最多生成 2 次/);
+});
+
+test('编辑预览：只校验不保存，未溯源数字会被拦下', async () => {
+  let r = await api('POST', `/api/runs/${RUN_ID}/preview`, { text: '上证指数收于3716点', type: 'fact' });
+  assert.equal(r.status, 200);
+  assert.ok(r.data.flags.some((f) => f.rule === 'untraced_number' && f.level === 'block'));
+  r = await api('POST', `/api/runs/${RUN_ID}/preview`, { text: '上证指数{{F2}}，收于{{F1}}。', type: 'fact' });
+  assert.equal(r.data.flags.filter((f) => f.level === 'block').length, 0);
+  assert.match(r.data.rendered, /3716\.28点/);
+  r = await api('POST', `/api/runs/${RUN_ID}/preview`, { text: 123 });
+  assert.equal(r.status, 400);
+  const run = (await api('GET', `/api/runs/${RUN_ID}`)).data;
+  assert.ok(!sentences(run).some((s) => s.text.includes('3716点')), '预览不应写入草稿');
+});
+
+test('共享样例只读：拒绝编辑与反馈；复制后得到可编辑的独立草稿', async () => {
+  let r = await api('PATCH', '/api/runs/sample01/sentences/S1', { text: '改动', actor: '投顾' });
+  assert.equal(r.status, 409);
+  assert.match(r.data.error, /共享的样例/);
+  r = await api('POST', '/api/runs/sample01/feedback', { sid: 'S1', rating: 'up' });
+  assert.equal(r.status, 409);
+  r = await api('POST', '/api/runs/sample01/clone', {});
+  assert.equal(r.status, 200);
+  const copy = r.data;
+  assert.notEqual(copy.id, 'sample01');
+  assert.equal(copy.is_sample, false);
+  assert.equal(copy.status, 'draft');
+  assert.deepEqual(copy.audit.map((a) => a.action), ['generate', 'clone']);
+  r = await api('PATCH', `/api/runs/${copy.id}/sentences/S1`, { action: 'delete', actor: '投顾' });
+  assert.equal(r.status, 200);
+  const sample = (await api('GET', '/api/runs/sample01')).data;
+  assert.ok(!sentences(sample).find((s) => s.id === 'S1').deleted, '复制件的改动不应影响样例');
 });

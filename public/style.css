@@ -191,3 +191,4 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .sticky-bar button { white-space: nowrap; }
   .ctabs button[data-ctab] { padding: 8px 8px; }
 }
+.sample-bar { margin-top: 10px; font-size: 13px; background: var(--blue-bg); color: #1d4f99; border-radius: 6px; padding: 8px 10px; }
