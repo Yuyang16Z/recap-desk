@@ -24,8 +24,10 @@ describe('环比与渲染', () => {
     assert.equal(ppText(-29.06), '较前一交易日下降29.1个百分点');
     assert.equal(ppText(0.01), '与前一交易日基本持平');
   });
-  test('占位符前已有渲染值开头的字词时去重（前一交易日为 / ，上涨）', () => {
-    assert.equal(trimOverlap('后者前一交易日为', '前一交易日2只', ''), '2只');
+  test('去重只在前文结尾与渲染值开头相同时发生，不会把指数名里的数字和数值拼在一起', () => {
+    assert.equal(trimOverlap('热股榜排名第', '第1名', ''), '1名');
+    assert.equal(trimOverlap('权重股下跌，沪深300', '下跌0.11%', ''), '下跌0.11%');
+    assert.equal(trimOverlap('三大指数集体下跌，沪指', '下跌0.20%', ''), '下跌0.20%');
     assert.equal(renderText('上证指数，上涨{{F2}}', sheet, '2026-10-16'), '上证指数，上涨0.24%');
     assert.equal(renderText('上证指数收于{{F1}}', sheet, '2026-10-16'), '上证指数收于3716.28点');
   });

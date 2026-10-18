@@ -49,7 +49,7 @@ function summarize(run) {
     types,
     evidenced_inference: evidencedInference,
     sourced_ratio: run.gate.sourced_ratio,
-    blocks_before: sum(run.initial_flags, REPAIRABLE),
+    blocks_before: run.initial_blocks ?? sum(run.initial_flags, REPAIRABLE),
     flags_before: run.initial_flags,
     repair: run.repair,
     blocks_after: run.gate.block,
@@ -59,6 +59,9 @@ function summarize(run) {
     hypotheses: hs.length,
     verdicts: hs.reduce((a, h) => ({ ...a, [h.verdict]: (a[h.verdict] || 0) + 1 }), {}),
     hypothesis_problems: hs.filter((h) => h.problems?.length).length,
+    deduped_pendings: run.deduped_pendings || 0,
+    // 修复后仍有阻断的句子原文，便于人工判断是真问题还是校验误报
+    remaining_blocks: ss.filter((s) => (s.flags || []).some((f) => f.level === 'block')).map((s) => ({ id: s.id, text: s.text.slice(0, 200), problems: s.flags.filter((f) => f.level === 'block').map((f) => f.msg) })),
     title: run.draft.title,
   };
 }
@@ -109,6 +112,7 @@ const aggregate = {
   flags_before: flagTotals,
   drafts_with_zero_blocks_after: ok.filter((r) => r.ai.blocks_after === 0).length,
   avg_pending: avg(ok, (r) => r.ai.pending),
+  deduped_pendings: ok.reduce((a, r) => a + (r.ai.deduped_pendings || 0), 0),
   avg_sourced_ratio: avg(ok, (r) => r.ai.sourced_ratio),
   ai_coverage: avg(ok, (r) => r.ai.coverage.ratio),
   template_coverage: avg(okT, (r) => r.template.coverage.ratio),
@@ -152,7 +156,7 @@ const md = `# 多日评测报告
 | 阻断项：自修复前 → 后 | ${aggregate.blocks_before} → ${aggregate.blocks_after} |
 | 自修复：尝试 / 修好 / 删除 / 未修好 | ${aggregate.repair.attempted} / ${aggregate.repair.fixed} / ${aggregate.repair.deleted} / ${aggregate.repair.failed} |
 | 修复后零阻断的草稿 | ${aggregate.drafts_with_zero_blocks_after}/${aggregate.runs} |
-| 平均待确认句 | ${aggregate.avg_pending} |
+| 平均待确认句（其中系统追加的缺失说明见“缺失项”列） | ${aggregate.avg_pending}；另有 ${aggregate.deduped_pendings} 句 AI 待确认句与系统说明重复，已自动删除 |
 | 句子有依据比例 | ${pct(aggregate.avg_sourced_ratio)} |
 | 关键事实覆盖率：AI / 模板 | ${pct(aggregate.ai_coverage)} / ${pct(aggregate.template_coverage)} |
 | 带证据的归因句（每篇）：AI / 模板 | ${aggregate.ai_evidenced_inference} / ${aggregate.template_evidenced_inference} |

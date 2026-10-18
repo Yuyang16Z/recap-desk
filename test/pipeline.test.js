@@ -1,7 +1,7 @@
 // pipeline.js 单元测试：大模型不可用时的模板降级稿只含事实/待确认/带依据推断，且没有未溯源数字
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { templateDraft, nextSentenceId } from '../lib/pipeline.js';
+import { templateDraft, nextSentenceId, addSystemPendings } from '../lib/pipeline.js';
 import { FactSheet, pctText } from '../lib/collect.js';
 import { verifyDraft, verifySentence, renderText, computeGate } from '../lib/verify.js';
 
@@ -47,8 +47,8 @@ describe('templateDraft（大模型降级稿）', () => {
     const gate = verifyDraft(draft, sheet);
     assert.deepEqual(flagRules(draft), []);
     assert.equal(gate.block, 0);
-    // 主线归因句固定为待确认，提交前必须由投顾确认
-    assert.equal(gate.pending_unresolved, 1);
+    // 主线归因、风险提示两句固定为待确认，提交前必须由投顾确认
+    assert.equal(gate.pending_unresolved, 2);
     assert.equal(gate.can_submit, false);
     all(draft).filter((s) => s.type === 'pending').forEach((s) => { s.pending_confirmed = true; });
     assert.equal(computeGate(draft).can_submit, true);
@@ -60,12 +60,10 @@ describe('templateDraft（大模型降级稿）', () => {
     assert.equal(renderText(draft.title, sheet, '2026-10-16'), '10月16日盘后复盘（数据底稿版）');
   });
 
-  test('推断句仅一条且带依据与不确定措辞；正文不含任何归因推断', () => {
+  test('降级稿不含任何推断句（与"本稿不含推断"的说明一致）', () => {
     const { sheet, base } = fakeSheet();
     const draft = templateDraft(sheet, base);
-    const inf = all(draft).filter((s) => s.type === 'inference');
-    assert.equal(inf.length, 1);
-    assert.ok(inf[0].refs.length > 0);
+    assert.equal(all(draft).filter((s) => s.type === 'inference').length, 0);
   });
 
   test('统计接口不可用 + 指数日K缺失 + 数据冲突：缺失项写成待确认句，仍无未溯源数字', () => {
@@ -81,14 +79,19 @@ describe('templateDraft（大模型降级稿）', () => {
       dq: [{ level: 'error', code: 'stale', title: '涨停统计返回日期与所选交易日不一致' }, { level: 'info', code: 'window', title: '连板天梯窗口不含所选日' }],
     });
     const draft = templateDraft(sheet, base);
+    const added = addSystemPendings(draft, sheet);
     const gate = verifyDraft(draft, sheet);
     assert.ok(!flagRules(draft).includes('untraced_number'), JSON.stringify(flagRules(draft)));
     assert.equal(gate.block, 0);
-    const s1 = draft.sections[0].sentences;
-    assert.ok(s1.length === 4 && s1.every((s) => s.type === 'pending'), '第一节只剩缺失说明');
+    assert.equal(draft.sections[0].sentences.length, 0, '缺失的指数数据不出现任何数字句');
     assert.match(all(draft).map((s) => s.text).join(''), /涨停池共\{\{F\d+\}\}/);
-    // 4 条缺失（index×3 + breadth；limit 缺失在第二节）+ 主线待补写 + 1 条 error 级 dq；info 级不出句子
-    assert.equal(gate.pending_unresolved, 7);
+    // 5 条缺失 + 1 条 error 级核验问题由系统追加为锁定的待确认句；info 级不出句子
+    assert.equal(added, 6);
+    const sys = all(draft).filter((s) => s.origin === 'system');
+    assert.equal(sys.length, 6);
+    assert.ok(sys.every((s) => s.locked && s.type === 'pending'));
+    // 系统句 6 + 模板固定待确认 2
+    assert.equal(gate.pending_unresolved, 8);
   });
 
   test('模板稿里的题材名「F5G」应原样保留', () => {

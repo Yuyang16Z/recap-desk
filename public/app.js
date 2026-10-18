@@ -3,7 +3,7 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ID_RE = /^[EF]\d+$/;
 const safeUrl = (u) => (/^https?:\/\//i.test(String(u || '')) ? String(u) : null);
-const state = { role: '投顾', run: null, tab: 'facts', centerTab: 'draft', editing: null, inline: null, adding: null, issueIdx: -1, factFilter: '' };
+const state = { role: '投顾', run: null, tab: 'facts', centerTab: 'draft', editing: null, inline: null, adding: null, issueIdx: -1, factFilter: '', aiBusy: null };
 const TYPE = { fact: ['事实', 't-fact'], inference: ['推断', 't-inf'], pending: ['待确认', 't-pend'] };
 const STATUS = { generating: '生成中', draft: '草稿', in_review: '待合规审核', approved: '已通过', returned: '已退回' };
 const AUD = { steady: '稳健型客户群', short: '短线交流群', inst: '机构/内部简报' };
@@ -11,7 +11,10 @@ const SIM = { 'fuyao:limit_up_pool': '涨停池失败', 'fuyao:index_kline': '�
 const REASONS = ['数字错误', '归因牵强', '不合规', '表达啰嗦', '遗漏重点'];
 const ROLE_TIP = { 投顾: '已切换为投资顾问：可以编辑句子、确认待确认项、提交合规审核', 合规: '已切换为合规审核：可以审核通过或退回、维护规则库' };
 const fmtTime = (ms) => new Date(ms).toLocaleString('zh-CN', { hour12: false });
-const editable = () => state.run && !state.run.is_sample && ['draft', 'returned'].includes(state.run.status) && state.role === '投顾';
+const canEdit = () => state.run && !state.run.is_sample && ['draft', 'returned'].includes(state.run.status) && state.role === '投顾';
+// AI 合规复核期间（本页发起，或服务端标记正在复核）暂停编辑与提交，避免改动与复核结果错位
+const reviewing = () => !!state.run && (state.aiBusy === state.run.id || !!state.run.ai_review_running);
+const editable = () => canEdit() && !reviewing();
 
 async function api(path, opts = {}) {
   const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
@@ -20,6 +23,7 @@ async function api(path, opts = {}) {
   return j;
 }
 function toast(msg, bad) {
+  $$('.toast').forEach((x) => x.remove());
   const t = document.createElement('div');
   t.className = `toast ${bad ? 'bad' : ''}`;
   t.textContent = msg;
@@ -33,16 +37,13 @@ function cnDate(d) { const [, m, dd] = d.split('-').map(Number); return `${m}月
 // 与服务端 verify.js 的 trimOverlap 保持一致：去掉占位符前后与渲染值重叠的字词
 function trimOverlap(prev, display, next) {
   let d = display;
-  let trimmed = false;
-  for (let k = Math.min(4, d.length - 1); k >= 1; k--) if (prev.endsWith(d.slice(0, k))) { d = d.slice(k); trimmed = true; break; }
-  if (!trimmed) {
-    const tail = prev.slice(-8);
-    for (let k = Math.min(6, d.length - 1); k >= 2; k--) if (tail.includes(d.slice(0, k))) { d = d.slice(k); break; }
+  if (!/[0-9０-９]$/.test(prev)) {
+    for (let k = Math.min(4, d.length - 1); k >= 1; k--) if (prev.endsWith(d.slice(0, k))) { d = d.slice(k); break; }
   }
   for (let k = Math.min(4, d.length - 1); k >= 1; k--) if (next.startsWith(d.slice(-k))) { d = d.slice(0, d.length - k); break; }
   return d;
 }
-function renderRich(text, run) {
+function renderRich(text, run, { showEvidence = false } = {}) {
   let out = '';
   let raw = '';
   let last = 0;
@@ -59,6 +60,7 @@ function renderRich(text, run) {
         out += `<span class="chip" data-ref="${id}" title="${esc(`${id} ${f.label}`)}">${esc(d)}</span>`;
         raw += d;
       } else if (!run.evidence.find((x) => x.id === id)) out += `<span class="chip bad">无效引用${esc(id)}</span>`;
+      else if (showEvidence) out += `<span class="ref" title="文本证据：发布时不显示，列在句末作为依据">${esc(id)}</span>`;
     }
     last = m.index + m[0].length;
   }
@@ -122,9 +124,12 @@ async function startRun() {
   const ul = $('.steps', prog);
   const line = (html, cls = '') => { const li = document.createElement('li'); li.className = cls; li.innerHTML = html; ul.appendChild(li); ul.scrollTop = ul.scrollHeight; return li; };
   const callEls = {};
+  let ended = false;
+  let streaming = false;
   try {
     const res = await fetch('/api/runs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: $('#date').value || null, audience: $('#audience').value, simulate }) });
     if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || `HTTP ${res.status}`); }
+    streaming = true;
     const reader = res.body.getReader();
     const dec = new TextDecoder();
     let buf = '';
@@ -152,11 +157,13 @@ async function startRun() {
         } else if (ev.type === 'warn') line(`⚠ ${esc(ev.msg)}`, 'warn');
         else if (ev.type === 'info') line(`ℹ ${esc(ev.msg)}`, 'info');
         else if (ev.type === 'error') {
+          ended = true;
           line(`✗ ${esc(ev.msg)}${ev.suggestion ? ` <button class="mini" data-sug="${esc(ev.suggestion)}">改用 ${esc(ev.suggestion)}</button>` : ''}`, 'error');
           $('#progSum').textContent = '生成中止，未产出任何结论';
           const b = $('button[data-sug]', prog);
           if (b) b.onclick = () => { $('#date').value = b.dataset.sug; startRun(); };
         } else if (ev.type === 'done') {
+          ended = true;
           const m = ev.run.metrics;
           line(`<b>✓ 完成</b>：用时 ${(m.gen_ms / 1000).toFixed(1)}s，接口调用 ${m.tool_calls} 次（Agent 自主调用 ${m.agent_tool_calls} 次），大模型调用 ${m.llm_calls} 次`, 'done');
           $('#progSum').textContent = `✓ 已完成 · 用时 ${(m.gen_ms / 1000).toFixed(1)}s · 接口 ${m.tool_calls} 次（Agent ${m.agent_tool_calls}）· 点此展开生成过程`;
@@ -168,9 +175,12 @@ async function startRun() {
         }
       }
     }
+    if (!ended) throw new Error('与服务器的连接中断，没有收到完成结果');
   } catch (e) {
-    line(`✗ ${esc(e.message)}`, 'error');
-    $('#progSum').textContent = '生成失败';
+    const cut = streaming && !ended;
+    line(`✗ ${esc(e.message)}${cut ? '。服务端检测到断开后会停止本次生成，不会产出半成品；请稍后刷新左侧历史记录确认，或重新生成。' : ''}`, 'error');
+    $('#progSum').textContent = cut ? '连接中断' : '生成失败';
+    if (cut) loadRuns();
   } finally {
     btn.disabled = false;
     btn.textContent = '生成复盘底稿';
@@ -181,7 +191,7 @@ async function startRun() {
 // ---------- 主视图 ----------
 function primaryAction(run) {
   if (state.role === '投顾' && ['draft', 'returned'].includes(run.status)) {
-    return `<button class="primary" data-act="submit" ${run.gate.can_submit ? '' : 'disabled'}>提交合规审核</button>`;
+    return `<button class="primary" data-act="submit" ${run.gate.can_submit && !reviewing() ? '' : 'disabled'}>提交合规审核</button>`;
   }
   if (state.role === '合规' && run.status === 'in_review') return '<button class="primary" data-act="approve">审核通过</button>';
   return '';
@@ -196,7 +206,8 @@ function render() {
   const m = run.metrics || {};
   const cov = run.coverage;
   const acts = [];
-  if (ed) acts.push('<button data-act="ai" class="ghost">AI 合规复核</button>');
+  const busy = reviewing();
+  if (canEdit()) acts.push(busy ? '<button data-act="ai" class="ghost" disabled><span class="spin"></span> AI 复核中…</button>' : '<button data-act="ai" class="ghost" title="用大模型逐句做语义合规复核，补关键词规则漏掉的隐含预测与变相建议">AI 合规复核</button>');
   if (state.role === '合规' && run.status === 'in_review') acts.push('<button data-act="return" class="ghost danger">退回修改</button>');
   acts.push(primaryAction(run), '<button data-act="copy" class="ghost">复制全文</button>', '<button data-act="export" class="ghost">导出文本</button>');
   let roleHint = '';
@@ -204,7 +215,7 @@ function render() {
   else if (run.status === 'in_review' && state.role === '投顾') roleHint = '已提交，等待合规审核：右上角切换为「合规审核」角色可继续体验审批。';
   else if (['draft', 'returned'].includes(run.status) && state.role === '合规') roleHint = '当前为草稿，需投资顾问提交后才能审核；你可以先打开「规则库」维护禁用表述。';
   else if (run.status === 'approved') roleHint = '已审核通过，定稿在页面底部，可直接复制发布。';
-  const why = ed && !g.can_submit ? `<div class="gate-why">还差 ${g.block ? `<a data-jump="block">${g.block} 个阻断项</a>` : ''}${g.block && g.pending_unresolved ? '、' : ''}${g.pending_unresolved ? `<a data-jump="pending">${g.pending_unresolved} 条待确认</a>` : ''}，处理完才能提交合规审核。</div>` : '';
+  const why = busy ? '<div class="gate-why busy"><span class="spin"></span> AI 正在逐句做语义合规复核（通常几秒到半分钟），期间暂停编辑与提交；完成后提示会挂在对应句子下面，由你决定是否修改。</div>' : ed && !g.can_submit ? `<div class="gate-why">还差 ${g.block ? `<a data-jump="block">${g.block} 个阻断项</a>` : ''}${g.block && g.pending_unresolved ? '、' : ''}${g.pending_unresolved ? `<a data-jump="pending">${g.pending_unresolved} 条待确认</a>` : ''}，处理完才能提交合规审核。</div>` : '';
   const hs = run.agent?.hypotheses || [];
   const hProblems = hs.filter((h) => h.problems?.length).length;
   const agentRounds = (run.agent?.steps || []).filter((s) => s.tool_calls.length).length;
@@ -263,13 +274,13 @@ function renderDraft(run, ed) {
   ${run.final_text ? `<div class="card final"><h3>定稿（可直接发布）</h3><pre>${esc(run.final_text)}</pre><button data-act="copyFinal" class="primary">复制定稿</button></div>` : ''}
   <div class="card legend">
     <span class="badge t-fact">事实</span> 只复述底稿数据 · <span class="badge t-inf">推断</span> 有依据且带不确定措辞 · <span class="badge t-pend">待确认</span> 缺失/冲突需人工确认 ·
-    <span class="chip">蓝色数字</span> 由系统按原始字段渲染，点击查看来源与被哪些句子引用
+    <span class="tag sys">系统</span> 数据缺失说明，不可删改 · <span class="chip">蓝色数字</span> 由系统按原始字段渲染，点击查看来源与被哪些句子引用
   </div>`;
 }
 
 function addForm(sec) {
   return `<div class="inline-form add-form" data-sec="${esc(sec.id)}">
-    <textarea id="addText" placeholder="补充一句。数字请用 {{F编号}} 引用事实底稿（点击右侧编号可插入），日期写 {{DATE}}"></textarea>
+    <textarea id="addText" placeholder="补充一句。数字请用 {{F编号}} 引用事实底稿，推断的依据可插入 {{E编号}}（点击右侧编号即可插入），日期写 {{DATE}}"></textarea>
     <div class="row"><select id="addType">${Object.entries(TYPE).map(([k, v]) => `<option value="${k}">${v[0]}</option>`).join('')}</select>
     <button class="primary mini" data-addsave="${esc(sec.id)}">添加并校验</button><button class="mini" data-addcancel>取消</button></div>
   </div>`;
@@ -331,9 +342,9 @@ function renderSentence(s, run, ed) {
   if (state.editing === s.id) {
     return `<div class="sent editing" data-sid="${esc(s.id)}">
       <textarea id="editText">${esc(s.text)}</textarea>
-      <div class="preview"><span class="sub">预览：</span><span id="editPreview">${renderRich(s.text, run)}</span></div>
+      <div class="preview"><span class="sub">预览：</span><span id="editPreview">${renderRich(s.text, run, { showEvidence: true })}</span></div>
       <div id="editFlags">${(s.flags || []).map(flagHtml).join('')}</div>
-      <div class="hint">数字请用 {{F编号}} 引用（点击右侧事实底稿的编号可插入到光标处），日期用 {{DATE}}。边写边校验；Ctrl/⌘ + Enter 保存，Esc 取消。</div>
+      <div class="hint">数字请用 {{F编号}} 引用，推断的依据可插入 {{E编号}}（点击右侧编号即可插入到光标处），日期用 {{DATE}}。边写边校验；Ctrl/⌘ + Enter 保存，Esc 取消。</div>
       <div class="row"><select id="editType">${Object.entries(TYPE).map(([k, v]) => `<option value="${k}" ${k === s.type ? 'selected' : ''}>${v[0]}</option>`).join('')}</select>
       <button class="primary mini" data-edit="save">保存并校验</button><button class="mini" data-edit="cancel">取消</button></div>
     </div>`;
@@ -344,17 +355,17 @@ function renderSentence(s, run, ed) {
   const fb = (run.feedback || []).filter((f) => f.sid === s.id).slice(-1)[0];
   const inline = state.inline?.sid === s.id ? inlineForm(state.inline.kind) : '';
   return `<div class="sent ${s.deleted ? 'deleted' : ''} ${(s.flags || []).some((f) => f.level === 'block') && !s.deleted ? 'has-block' : ''}" data-sid="${esc(s.id)}">
-    <div class="line"><span class="badge ${tc}">${tl}</span>${s.origin === 'human' ? '<span class="tag">人工</span>' : s.origin === 'injected' ? '<span class="tag warn">注入</span>' : ''}${s.edited ? '<span class="tag">已改</span>' : ''}
+    <div class="line"><span class="badge ${tc}">${tl}</span>${s.origin === 'human' ? '<span class="tag">人工</span>' : s.origin === 'injected' ? '<span class="tag warn">注入</span>' : s.origin === 'system' ? '<span class="tag sys" title="系统根据数据缺失或核验结果自动追加，不能删除或改写；核实后点「确认保留」">系统</span>' : ''}${s.edited ? '<span class="tag">已改</span>' : ''}${s.deleted && s.dedup ? `<span class="tag" title="与系统追加的「${esc(s.dedup)}」说明重复">与系统说明重复，已自动删除</span>` : ''}
       ${repairTag(s)}<span class="txt">${renderRich(s.text, run)}</span>${refs}</div>
     ${repairDetail(s, run)}
     ${flags}${ai}
     ${s.type === 'pending' && s.pending_confirmed ? `<div class="flag ok">已人工确认保留${s.note ? `：${esc(s.note)}` : ''}</div>` : ''}
     ${inline}
     <div class="ops">
-      ${ed && !s.deleted ? '<button class="mini" data-op="edit">编辑</button>' : ''}
+      ${ed && !s.deleted && !s.locked ? '<button class="mini" data-op="edit">编辑</button>' : ''}
       ${ed && s.type === 'pending' && !s.pending_confirmed && !s.deleted ? '<button class="mini" data-op="confirm">确认保留</button>' : ''}
       ${ed && (s.ai_flags || []).some((f) => !f.dismissed) ? '<button class="mini" data-op="dismiss">忽略 AI 提示</button>' : ''}
-      ${ed ? `<button class="mini" data-op="${s.deleted ? 'restore' : 'delete'}">${s.deleted ? '恢复' : '删除'}</button>` : ''}
+      ${ed && !s.locked ? `<button class="mini" data-op="${s.deleted ? 'restore' : 'delete'}">${s.deleted ? '恢复' : '删除'}</button>` : ''}
       ${!s.deleted && !run.is_sample ? `<button class="mini fb ${fb?.rating === 'up' ? 'on' : ''}" data-op="up" title="这句有用">👍</button><button class="mini fb ${fb?.rating === 'down' ? 'on' : ''}" data-op="down" title="这句有问题">👎${fb?.rating === 'down' && fb.reason ? ` ${esc(fb.reason)}` : ''}</button>` : ''}
     </div>
   </div>`;
@@ -373,7 +384,10 @@ function inlineForm(kind) {
 function bindRun(run, ed) {
   const upd = async (p, body, method = 'PATCH', keep = {}) => {
     try {
-      state.run = await api(`/api/runs/${run.id}${p}`, { method, body });
+      const next = await api(`/api/runs/${run.id}${p}`, { method, body });
+      // 请求期间用户已打开别的记录：只刷新列表，不把视图拉回原记录
+      if (state.run?.id !== run.id) { loadRuns(); return true; }
+      state.run = next;
       Object.assign(state, { editing: null, inline: null, adding: null, ...keep });
       render();
       loadRuns();
@@ -381,7 +395,7 @@ function bindRun(run, ed) {
     } catch (e) {
       toast(e.message, true);
       // 失败时（如提交被门禁拒绝）服务端可能已按最新规则重算了校验结果，重新拉取以免页面显示过期状态
-      try { state.run = await api(`/api/runs/${run.id}`); render(); } catch { /* 保持当前视图 */ }
+      try { const cur = await api(`/api/runs/${run.id}`); if (state.run?.id === run.id) { state.run = cur; render(); } } catch { /* 保持当前视图 */ }
       return false;
     }
   };
@@ -420,7 +434,7 @@ function bindRun(run, ed) {
   if (ta) {
     let timer;
     const preview = () => {
-      $('#editPreview').innerHTML = renderRich(ta.value, run);
+      $('#editPreview').innerHTML = renderRich(ta.value, run, { showEvidence: true });
       clearTimeout(timer);
       timer = setTimeout(async () => {
         try {
@@ -455,8 +469,15 @@ function bindRun(run, ed) {
     else if (name === 'approve') upd('/review', { decision: 'approve' }, 'POST');
     else if (name === 'return') showReturn(run);
     else if (name === 'ai') {
-      $$('[data-act="ai"]').forEach((b) => { b.disabled = true; b.textContent = 'AI 复核中…'; });
-      await upd('/ai-review', {}, 'POST');
+      state.aiBusy = run.id;
+      Object.assign(state, { editing: null, inline: null, adding: null });
+      render();
+      const ok = await upd('/ai-review', {}, 'POST');
+      state.aiBusy = null;
+      if (state.run?.id === run.id) {
+        render();
+        if (ok) toast(state.run.ai_review?.issues ? `AI 复核完成：发现 ${state.run.ai_review.issues} 处疑似问题，已挂在对应句子下面` : 'AI 复核完成：没有发现语义层面的疑似问题');
+      }
     } else if (name === 'export') window.open(`/api/runs/${run.id}/export`, '_blank');
     else if (name === 'copy') {
       const text = await fetch(`/api/runs/${run.id}/export`).then((r) => r.text()).catch(() => '');
@@ -533,7 +554,7 @@ function showPop(anchor, id) {
   const pop = document.createElement('div');
   pop.id = 'pop';
   pop.className = 'pop';
-  pop.innerHTML = `${body}<div class="pop-foot">${usedHtml}${state.editing && f ? ` <button class="mini primary" data-insert="${esc(id)}">插入到编辑中</button>` : ''}<button class="mini" data-showside>在事实底稿中查看</button></div>`;
+  pop.innerHTML = `${body}<div class="pop-foot">${usedHtml}${(state.editing || state.adding) && $('#editText, #addText') ? ` <button class="mini primary" data-insert="${esc(id)}">插入到编辑中</button>` : ''}<button class="mini" data-showside>在事实底稿中查看</button></div>`;
   document.body.appendChild(pop);
   const r = anchor.getBoundingClientRect();
   const w = Math.min(420, window.innerWidth - 24);
@@ -570,38 +591,21 @@ function renderSide() {
   const P = $('#sidePanel');
   if (!run) return;
   if (state.tab === 'facts') {
-    const used = usageMap(run);
-    const q = state.factFilter.trim().toLowerCase();
-    const match = (x) => !q || `${x.id} ${x.label || ''} ${x.display || ''} ${x.stock || ''} ${x.text || ''}`.toLowerCase().includes(q);
-    const facts = run.facts.filter(match);
-    const evs = run.evidence.filter(match);
-    const usedTag = (id) => {
-      const u = used.get(id) || [];
-      return u.length ? `<span class="sub">被引用 ${u.map((sid) => `<a data-goto="${esc(sid)}">${esc(sid)}</a>`).join(' ')}</span>` : '<span class="tag">正文未引用</span>';
-    };
-    P.innerHTML = `<input id="factFilter" class="filter" placeholder="搜索编号、名称或数值，如：涨停、F12、新华传媒" value="${esc(state.factFilter)}">
-      <p class="hint">${state.editing || state.adding ? '正在编辑：点击编号可插入到光标处。' : '点击编号可定位到引用它的句子。'}共 ${run.facts.length} 条数字事实、${run.evidence.length} 条文本证据；系统计算的派生值已注明公式。</p>
-      ${facts.map((f) => `<div class="fact" id="ref-${esc(f.id)}">
-        <div><button class="idbtn" data-ins="${esc(f.id)}">${esc(f.id)}</button> <b>${esc(f.label)}</b> = <span class="chip">${esc(f.display)}</span> ${usedTag(f.id)}</div>
-        <div class="sub">字段：${esc(f.field)} · 时点：${esc(f.as_of)}</div>
-        <div class="sub">口径：${esc(f.caliber || '—')}</div>
-        <div class="sub">来源：${esc(f.source)} <code>${esc(f.endpoint || '')}</code> · 调用 ${esc(f.call_id || '')} · request_id ${esc((f.request_id || '').slice(0, 12))}</div>
-        ${f.members ? `<div class="sub">成员：${esc(f.members.slice(0, 15).join('、'))}</div>` : ''}
-      </div>`).join('') || '<p class="hint">没有匹配的数字事实</p>'}
-      <h4>文本证据</h4>
-      ${evs.map((e) => { const link = safeUrl(e.link); return `<div class="fact" id="ref-${esc(e.id)}"><div><b>${esc(e.id)}</b> ${esc(e.stock || '')} ${e.tag ? `<span class="tag">${esc(e.tag)}</span>` : ''} <span class="sub">${esc(e.kind)}</span> ${usedTag(e.id)}</div>
-        <div class="evtext">${esc(e.text)}</div>
-        <div class="sub">来源：${esc(e.source)}${e.time ? ` · ${esc(e.time)}` : ''}${link ? ` · <a href="${esc(link)}" target="_blank" rel="noopener noreferrer">原文</a>` : ''}</div></div>`; }).join('') || '<p class="hint">无</p>'}`;
-    const fi = $('#factFilter');
-    fi.oninput = () => { state.factFilter = fi.value; const pos = fi.selectionStart; renderSide(); const n = $('#factFilter'); n.focus(); n.setSelectionRange(pos, pos); };
-    $$('.idbtn', P).forEach((b) => b.onclick = () => {
-      const id = b.dataset.ins;
-      if (insertRef(id)) return;
-      const u = used.get(id) || [];
-      if (u.length) gotoSentence(u[0]); else toast('正文暂未引用这条事实');
-    });
-    $$('[data-goto]', P).forEach((a) => a.onclick = () => gotoSentence(a.dataset.goto));
-  } else if (state.tab === 'dq') {
+    // 搜索框只创建一次、之后只刷新结果列表：整块重绘会打断中文输入法的拼写（composition）
+    if (P.dataset.view !== 'facts' || !$('#factFilter', P)) {
+      P.innerHTML = '<input id="factFilter" class="filter" placeholder="搜索编号、名称或数值，如：涨停、F12、新华传媒"><div id="factList"></div>';
+      const fi = $('#factFilter', P);
+      fi.value = state.factFilter;
+      const update = () => { state.factFilter = fi.value; renderFactList(); };
+      fi.addEventListener('input', (e) => { if (!e.isComposing) update(); });
+      fi.addEventListener('compositionend', update);
+    }
+    P.dataset.view = 'facts';
+    renderFactList();
+    return;
+  }
+  P.dataset.view = state.tab;
+  if (state.tab === 'dq') {
     const t = run.trading;
     P.innerHTML = `<div class="fact"><b>交易日校验</b><div class="sub">所选：${esc(t.date)}；最近已收盘交易日：${esc(t.latestClosed)}；生成时：${esc(t.now)}</div>
       <div class="sub">行情快照是否等于所选日收盘口径：${t.snapshotIsDateClose ? '是（全市场涨跌家数可用）' : '否（涨跌家数不出具）'}</div></div>
@@ -619,6 +623,41 @@ function renderSide() {
     P.innerHTML = `<h4>审计日志</h4>${run.audit.slice().reverse().map((a) => `<div class="fact"><div><b>${esc(a.actor)}</b> · ${esc(a.action)} · <span class="sub">${fmtTime(a.at)}</span></div><div class="sub">${esc(a.detail || '')}</div></div>`).join('')}
       <h4>逐句反馈（${run.feedback.length}）</h4>${run.feedback.map((f) => `<div class="sub">${esc(f.sid)} ${f.rating === 'up' ? '👍' : '👎'} ${esc(f.reason || '')} · ${fmtTime(f.at)}</div>`).join('') || '<p class="hint">还没有反馈</p>'}`;
   }
+}
+
+function renderFactList() {
+  const run = state.run;
+  const box = $('#factList');
+  if (!run || !box) return;
+  const used = usageMap(run);
+  const q = state.factFilter.trim().toLowerCase();
+  const match = (x) => !q || `${x.id} ${x.label || ''} ${x.display || ''} ${x.stock || ''} ${x.tag || ''} ${x.text || ''}`.toLowerCase().includes(q);
+  const facts = run.facts.filter(match);
+  const evs = run.evidence.filter(match);
+  const usedTag = (id) => {
+    const u = used.get(id) || [];
+    return u.length ? `<span class="sub">被引用 ${u.map((sid) => `<a data-goto="${esc(sid)}">${esc(sid)}</a>`).join(' ')}</span>` : '<span class="tag">正文未引用</span>';
+  };
+  const editingNow = (state.editing || state.adding) && $('#editText, #addText');
+  box.innerHTML = `<p class="hint">${editingNow ? '正在编辑：点击编号可插入到光标处（F 为数字，E 为文本证据）。' : '点击编号可定位到引用它的句子。'}${q ? `匹配 ${facts.length} 条数字事实、${evs.length} 条文本证据。` : `共 ${run.facts.length} 条数字事实、${run.evidence.length} 条文本证据；系统计算的派生值已注明公式。`}</p>
+    ${facts.map((f) => `<div class="fact" id="ref-${esc(f.id)}">
+      <div><button class="idbtn" data-ins="${esc(f.id)}">${esc(f.id)}</button> <b>${esc(f.label)}</b> = <span class="chip">${esc(f.display)}</span> ${usedTag(f.id)}</div>
+      <div class="sub">字段：${esc(f.field)} · 时点：${esc(f.as_of)}</div>
+      <div class="sub">口径：${esc(f.caliber || '—')}</div>
+      <div class="sub">来源：${esc(f.source)} <code>${esc(f.endpoint || '')}</code> · 调用 ${esc(f.call_id || '')} · request_id ${esc((f.request_id || '').slice(0, 12))}</div>
+      ${f.members ? `<div class="sub">成员：${esc(f.members.slice(0, 15).join('、'))}</div>` : ''}
+    </div>`).join('') || '<p class="hint">没有匹配的数字事实</p>'}
+    <h4>文本证据</h4>
+    ${evs.map((e) => { const link = safeUrl(e.link); return `<div class="fact" id="ref-${esc(e.id)}"><div><button class="idbtn" data-ins="${esc(e.id)}">${esc(e.id)}</button> ${esc(e.stock || '')} ${e.tag ? `<span class="tag">${esc(e.tag)}</span>` : ''} <span class="sub">${esc(e.kind)}</span> ${usedTag(e.id)}</div>
+      <div class="evtext">${esc(e.text)}</div>
+      <div class="sub">来源：${esc(e.source)}${e.time ? ` · ${esc(e.time)}` : ''}${link ? ` · <a href="${esc(link)}" target="_blank" rel="noopener noreferrer">原文</a>` : ''}</div></div>`; }).join('') || '<p class="hint">没有匹配的文本证据</p>'}`;
+  $$('.idbtn', box).forEach((b) => b.onclick = () => {
+    const id = b.dataset.ins;
+    if (insertRef(id)) return;
+    const u = used.get(id) || [];
+    if (u.length) gotoSentence(u[0]); else toast('正文暂未引用这一条');
+  });
+  $$('[data-goto]', box).forEach((a) => a.onclick = () => gotoSentence(a.dataset.goto));
 }
 
 // ---------- 弹窗 ----------
@@ -753,13 +792,19 @@ async function showRules() {
   <div class="tbl"><table><tbody>${BUILTIN.map(([n, l, d]) => `<tr><td>${esc(n)}</td><td><span class="badge ${l === '阻断' ? 'lv-block' : 'lv-warn'}">${l}</span></td><td class="sub">${esc(d)}</td></tr>`).join('')}</tbody></table></div>
   <h4>团队禁用表述（${cfg.rules.length}）</h4>
   <div class="tbl"><table><tbody>${cfg.rules.map((r) => `<tr><td>「${esc(r.phrase)}」</td><td><span class="badge ${r.level === 'warn' ? 'lv-warn' : 'lv-block'}">${r.level === 'warn' ? '提醒' : '阻断'}</span></td><td class="sub">${esc(r.reason || '')} · ${esc(r.created_by || '')} ${fmt(r.created_at)}</td><td>${isComp ? `<button class="mini" data-del-rule="${esc(r.id)}">删除</button>` : ''}</td></tr>`).join('') || '<tr><td class="sub">暂无</td></tr>'}</tbody></table></div>
-  ${isComp ? '<div class="row form"><input id="rPhrase" maxlength="30" placeholder="禁用表述，如：确定性机会"><select id="rLevel"><option value="block">阻断</option><option value="warn">提醒</option></select><input id="rReason" maxlength="80" placeholder="原因（可选）"><button class="primary mini" id="rAdd">加入规则库</button></div>' : '<p class="hint">切换为「合规审核」角色后可以新增或删除禁用表述。</p>'}
+  ${isComp ? '<div class="row form"><input id="rPhrase" maxlength="30" placeholder="禁用表述，如：确定性机会"><select id="rLevel"><option value="block">阻断</option><option value="warn">提醒</option></select><input id="rReason" maxlength="80" placeholder="原因（可选）"><button class="primary mini" id="rAdd">加入规则库</button></div><p class="hint">共享演示环境：如果规则库被改乱，可以 <button class="mini" id="rReset">恢复默认规则与偏好</button></p>' : '<p class="hint">切换为「合规审核」角色后可以新增或删除禁用表述。</p>'}
   <h4>写作偏好（${cfg.preferences.length}）</h4>
   <div class="tbl"><table><tbody>${cfg.preferences.map((p) => `<tr><td>${esc(p.text)}</td><td class="sub">${esc(p.created_by || '')} ${fmt(p.created_at)}</td><td><button class="mini" data-del-pref="${esc(p.id)}">删除</button></td></tr>`).join('') || '<tr><td class="sub">暂无</td></tr>'}</tbody></table></div>
   <div class="row form"><input id="pText" maxlength="80" placeholder="写作偏好，如：成交额变化放在第一节开头"><button class="primary mini" id="pAdd">添加偏好</button></div>`);
   const after = async () => { if (state.run) { try { state.run = await api(`/api/runs/${state.run.id}`); render(); } catch { /* 记录可能已被清空 */ } } showRules(); };
   const doAct = async (fn) => { try { await fn(); await after(); } catch (e) { toast(e.message, true); } };
   if ($('#rAdd')) $('#rAdd').onclick = () => doAct(() => api('/api/config/rules', { method: 'POST', body: { phrase: $('#rPhrase').value, level: $('#rLevel').value, reason: $('#rReason').value, actor: state.role } }));
+  // 恢复默认会清掉所有人新增的规则与偏好：第一次点击只变成确认态
+  if ($('#rReset')) $('#rReset').onclick = (e) => {
+    const b = e.currentTarget;
+    if (b.dataset.armed) doAct(() => api('/api/config/reset', { method: 'POST', body: { actor: state.role } }));
+    else { b.dataset.armed = '1'; b.textContent = '确认恢复？再点一次'; b.classList.add('danger'); }
+  };
   $$('[data-del-rule]').forEach((b) => b.onclick = () => doAct(() => api(`/api/config/rules/${encodeURIComponent(b.dataset.delRule)}?actor=${encodeURIComponent(state.role)}`, { method: 'DELETE' })));
   $('#pAdd').onclick = () => doAct(() => api('/api/config/preferences', { method: 'POST', body: { text: $('#pText').value, actor: state.role } }));
   $$('[data-del-pref]').forEach((b) => b.onclick = () => doAct(() => api(`/api/config/preferences/${encodeURIComponent(b.dataset.delPref)}`, { method: 'DELETE' })));
@@ -771,7 +816,7 @@ function showAbout() {
   <p><b>解决什么：</b>人工复盘要在多个页面间收集指数、涨跌停、连板、题材、异动原因，再手写、自查数字、送合规，耗时且容易出现抄错数字、口径不清、无依据归因和“明日看涨”式违规表述。</p>
   <p><b>AI 做什么：</b>① Agent 根据当天盘面判断主线，自主决定查哪些个股异动原因、哪些板块指数和新闻，把结论写成"判断 + 支持证据 + 反证 + 待补"；② 把十几类结构化数据和文本证据组织成可读的复盘稿，写出与前一交易日的变化，并区分事实、推断、待确认；③ 自修复：没通过校验的句子带着错误原因重写一轮，重新通过校验才采用；④ 语义层合规复核，补关键词规则漏掉的隐含预测和变相建议。</p>
   <p><b>反馈闭环：</b>合规把退回原因沉淀进「规则库」（退回时可一步加入），投顾把常改的写法沉淀为写作偏好；新增后立即作用于所有草稿的校验，并写进之后每次生成的提示词。</p>
-  <p><b>不让 AI 做什么：</b>不让它生成数字（数字由系统按原始字段渲染）、不让它决定是否发布（需投顾提交 + 合规通过）、不让它在数据缺失时“补全”。</p>
+  <p><b>不让 AI 做什么：</b>不让它生成数字（数字由系统按原始字段渲染）、不让它决定是否发布（需投顾提交 + 合规通过）、不让它在数据缺失时“补全”：缺失或核验异常由系统自动写成带「系统」标记的待确认句，不能删改，核实后确认保留才能提交。</p>
   <p><b>不做什么（非目标）：</b>不预测涨跌、不推荐个股、不面向散户直接输出、不替代合规审核。</p>
   <p><b>快速上手：</b>点门禁面板里的数字可直接定位问题句；「下一处问题」依次跳转；点正文蓝色数字可看来源和被引用情况；编辑时边写边校验，Ctrl/⌘ + Enter 保存。</p>
   <p class="hint">完整的问题定义、指标口径、失败条件与验证计划见代码仓库 README。</p>`);

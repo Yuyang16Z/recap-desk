@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-17T20:47:42.827Z",
+  "generated_at": "2026-10-18T06:00:38.912Z",
   "audience": "steady",
   "model": "deepseek-chat",
   "checklist": [
@@ -25,43 +25,43 @@
   "aggregate": {
     "runs": 8,
     "ai_success": 8,
-    "avg_gen_s": 21.53,
-    "max_gen_s": 24,
-    "avg_tool_calls": 27,
-    "avg_agent_tool_calls": 9.25,
+    "avg_gen_s": 24.69,
+    "max_gen_s": 34.2,
+    "avg_tool_calls": 27.38,
+    "avg_agent_tool_calls": 9.63,
     "tool_failures": 0,
-    "avg_tokens": 30469.88,
-    "blocks_before": 8,
+    "avg_tokens": 30183.5,
+    "blocks_before": 10,
     "blocks_after": 2,
     "repair": {
-      "attempted": 7,
-      "fixed": 6,
+      "attempted": 8,
+      "fixed": 7,
       "deleted": 0,
       "failed": 1
     },
     "flags_before": {
-      "unit_mismatch": 4,
+      "unit_mismatch": 2,
       "dup_ref": 2,
-      "entity_mismatch": 2,
-      "fact_has_inference": 2,
-      "untraced_number": 2
+      "fact_has_inference": 3,
+      "untraced_number": 5,
+      "entity_mismatch": 3
     },
     "drafts_with_zero_blocks_after": 7,
-    "avg_pending": 4,
+    "avg_pending": 4.5,
+    "deduped_pendings": 4,
     "avg_sourced_ratio": 0.89,
-    "ai_coverage": 0.98,
+    "ai_coverage": 1,
     "template_coverage": 1,
-    "ai_evidenced_inference": 1.38,
+    "ai_evidenced_inference": 1.25,
     "template_evidenced_inference": 0,
-    "ai_sentences": 19.13,
-    "template_sentences": 11.75,
+    "ai_sentences": 19.88,
+    "template_sentences": 12.75,
     "hypotheses": 4,
     "verdicts": {
-      "支持": 22,
-      "存疑": 1,
-      "部分支持": 9
+      "支持": 26,
+      "部分支持": 6
     },
-    "hypothesis_problems": 2
+    "hypothesis_problems": 3
   },
   "results": [
     {
@@ -69,28 +69,29 @@
       "ai": {
         "date": "2026-10-16",
         "degraded": false,
-        "gen_s": 24,
-        "tool_calls": 35,
-        "agent_tool_calls": 12,
+        "gen_s": 25.9,
+        "tool_calls": 34,
+        "agent_tool_calls": 11,
         "tool_failures": 0,
         "llm_calls": 6,
-        "tokens": 31330,
-        "facts": 68,
-        "evidence": 27,
+        "tokens": 32402,
+        "facts": 67,
+        "evidence": 28,
         "gaps": 0,
         "dq": 0,
-        "sentences": 20,
+        "sentences": 18,
         "types": {
           "fact": 13,
-          "inference": 4,
-          "pending": 3
+          "inference": 3,
+          "pending": 2
         },
-        "evidenced_inference": 1,
-        "sourced_ratio": 0.95,
+        "evidenced_inference": 0,
+        "sourced_ratio": 1,
         "blocks_before": 1,
         "flags_before": {
           "unit_mismatch": 1,
-          "dup_ref": 1
+          "dup_ref": 1,
+          "fact_has_inference": 1
         },
         "repair": {
           "attempted": 1,
@@ -99,57 +100,70 @@
           "deleted": 0
         },
         "blocks_after": 0,
-        "warns_after": 0,
-        "pending": 3,
+        "warns_after": 1,
+        "pending": 2,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：上涨0.24%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：15,554亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：59家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：49家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：11连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「低空经济」的个股数：11只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：10家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日减少776亿元（−4.75%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 4,
         "verdicts": {
           "支持": 3,
-          "存疑": 1
+          "部分支持": 1
         },
-        "hypothesis_problems": 0,
-        "title": "{{DATE}}盘后复盘：指数窄幅分化，涨停扩散但封板率回落"
+        "hypothesis_problems": 1,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
+        "title": "{{DATE}}盘后复盘：指数分化、量能回落，涨停结构分歧加大"
       },
       "template": {
         "date": "2026-10-16",
         "degraded": true,
-        "gen_s": 2.9,
+        "gen_s": 3.3,
         "tool_calls": 23,
         "agent_tool_calls": 0,
         "tool_failures": 0,
@@ -159,171 +173,14 @@
         "evidence": 9,
         "gaps": 0,
         "dq": 0,
-        "sentences": 11,
+        "sentences": 12,
         "types": {
-          "fact": 9,
-          "inference": 1,
-          "pending": 1
-        },
-        "evidenced_inference": 0,
-        "sourced_ratio": 0.909,
-        "blocks_before": 0,
-        "flags_before": {},
-        "repair": {
-          "attempted": 0,
-          "fixed": 0,
-          "failed": 0,
-          "deleted": 0
-        },
-        "blocks_after": 0,
-        "warns_after": 0,
-        "pending": 1,
-        "coverage": {
-          "items": [
-            {
-              "name": "上证指数涨跌幅",
-              "status": "covered"
-            },
-            {
-              "name": "两市成交额",
-              "status": "covered"
-            },
-            {
-              "name": "涨停家数",
-              "status": "covered"
-            },
-            {
-              "name": "炸板或封板率",
-              "status": "covered"
-            },
-            {
-              "name": "最高连板",
-              "status": "covered"
-            },
-            {
-              "name": "第一大涨停题材",
-              "status": "covered"
-            },
-            {
-              "name": "跌停家数",
-              "status": "covered"
-            },
-            {
-              "name": "与前一交易日对比",
-              "status": "covered"
-            }
-          ],
-          "ratio": 1
-        },
-        "hypotheses": 0,
-        "verdicts": {},
-        "hypothesis_problems": 0,
-        "title": "{{DATE}}盘后复盘（数据底稿版）"
-      }
-    },
-    {
-      "date": "2026-10-15",
-      "ai": {
-        "date": "2026-10-15",
-        "degraded": false,
-        "gen_s": 23.2,
-        "tool_calls": 25,
-        "agent_tool_calls": 8,
-        "tool_failures": 0,
-        "llm_calls": 6,
-        "tokens": 31843,
-        "facts": 64,
-        "evidence": 27,
-        "gaps": 1,
-        "dq": 0,
-        "sentences": 16,
-        "types": {
-          "fact": 9,
-          "inference": 4,
-          "pending": 3
-        },
-        "evidenced_inference": 2,
-        "sourced_ratio": 0.875,
-        "blocks_before": 1,
-        "flags_before": {
-          "unit_mismatch": 1,
-          "dup_ref": 1
-        },
-        "repair": {
-          "attempted": 1,
-          "fixed": 1,
-          "failed": 0,
-          "deleted": 0
-        },
-        "blocks_after": 0,
-        "warns_after": 0,
-        "pending": 3,
-        "coverage": {
-          "items": [
-            {
-              "name": "上证指数涨跌幅",
-              "status": "covered"
-            },
-            {
-              "name": "两市成交额",
-              "status": "covered"
-            },
-            {
-              "name": "涨停家数",
-              "status": "covered"
-            },
-            {
-              "name": "炸板或封板率",
-              "status": "covered"
-            },
-            {
-              "name": "最高连板",
-              "status": "covered"
-            },
-            {
-              "name": "第一大涨停题材",
-              "status": "covered"
-            },
-            {
-              "name": "跌停家数",
-              "status": "covered"
-            },
-            {
-              "name": "与前一交易日对比",
-              "status": "covered"
-            }
-          ],
-          "ratio": 1
-        },
-        "hypotheses": 4,
-        "verdicts": {
-          "部分支持": 2,
-          "支持": 2
-        },
-        "hypothesis_problems": 1,
-        "title": "{{DATE}}盘后复盘：指数普跌、成交额放大，涨停结构分化"
-      },
-      "template": {
-        "date": "2026-10-15",
-        "degraded": true,
-        "gen_s": 2.8,
-        "tool_calls": 17,
-        "agent_tool_calls": 0,
-        "tool_failures": 0,
-        "llm_calls": 0,
-        "tokens": 0,
-        "facts": 54,
-        "evidence": 9,
-        "gaps": 1,
-        "dq": 0,
-        "sentences": 11,
-        "types": {
-          "fact": 8,
-          "inference": 1,
+          "fact": 10,
+          "inference": 0,
           "pending": 2
         },
         "evidenced_inference": 0,
-        "sourced_ratio": 0.818,
+        "sourced_ratio": 0.833,
         "blocks_before": 0,
         "flags_before": {},
         "repair": {
@@ -339,42 +196,247 @@
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：上涨0.24%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：15,554亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：59家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：49家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：11连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「低空经济」的个股数：11只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：10家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日减少776亿元（−4.75%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 0,
         "verdicts": {},
         "hypothesis_problems": 0,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
+        "title": "{{DATE}}盘后复盘（数据底稿版）"
+      }
+    },
+    {
+      "date": "2026-10-15",
+      "ai": {
+        "date": "2026-10-15",
+        "degraded": false,
+        "gen_s": 25.8,
+        "tool_calls": 24,
+        "agent_tool_calls": 7,
+        "tool_failures": 0,
+        "llm_calls": 6,
+        "tokens": 32974,
+        "facts": 65,
+        "evidence": 26,
+        "gaps": 1,
+        "dq": 0,
+        "sentences": 17,
+        "types": {
+          "fact": 11,
+          "inference": 3,
+          "pending": 3
+        },
+        "evidenced_inference": 1,
+        "sourced_ratio": 0.882,
+        "blocks_before": 2,
+        "flags_before": {
+          "untraced_number": 1,
+          "entity_mismatch": 1
+        },
+        "repair": {
+          "attempted": 1,
+          "fixed": 0,
+          "failed": 1,
+          "deleted": 0
+        },
+        "blocks_after": 2,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered",
+              "hint": "上证指数涨跌幅：下跌1.59%"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered",
+              "hint": "沪深两市成交额：16,330亿元"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered",
+              "hint": "涨停家数：36家"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered",
+              "hint": "炸板家数：7家"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered",
+              "hint": "最高连板高度：5连板"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered",
+              "hint": "涨停原因含「业绩预增」的个股数：5只"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered",
+              "hint": "跌停家数：26家"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加2,186亿元（+15.46%）"
+            }
+          ],
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 3,
+          "部分支持": 1
+        },
+        "hypothesis_problems": 1,
+        "deduped_pendings": 0,
+        "remaining_blocks": [
+          {
+            "id": "S13",
+            "text": "连板高度集中于慈文传媒{{F21}}、百洋股份{{F22}}，二者{{F60}}、{{F64}}，均属短线加速型个股；3连板为冰山冷热{{F23}}、阳光乳业{{F24}}。",
+            "problems": [
+              "出现未溯源数字「3连板」",
+              "F60（慈文传媒近五根日K累计涨跌幅）属于「慈文传媒」，但句中把它写在「百洋股份」名下，疑似张冠李戴"
+            ]
+          }
+        ],
+        "title": "{{DATE}}盘后复盘：指数普跌下的结构性题材与风险观察"
+      },
+      "template": {
+        "date": "2026-10-15",
+        "degraded": true,
+        "gen_s": 2.7,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 54,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 0,
+        "sentences": 12,
+        "types": {
+          "fact": 9,
+          "inference": 0,
+          "pending": 3
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.75,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 3,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered",
+              "hint": "上证指数涨跌幅：下跌1.59%"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered",
+              "hint": "沪深两市成交额：16,330亿元"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered",
+              "hint": "涨停家数：36家"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered",
+              "hint": "炸板家数：7家"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered",
+              "hint": "最高连板高度：5连板"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered",
+              "hint": "涨停原因含「业绩预增」的个股数：5只"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered",
+              "hint": "跌停家数：26家"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加2,186亿元（+15.46%）"
+            }
+          ],
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
+        },
+        "hypotheses": 0,
+        "verdicts": {},
+        "hypothesis_problems": 0,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
         "title": "{{DATE}}盘后复盘（数据底稿版）"
       }
     },
@@ -383,84 +445,100 @@
       "ai": {
         "date": "2026-10-14",
         "degraded": false,
-        "gen_s": 18.7,
-        "tool_calls": 25,
-        "agent_tool_calls": 8,
+        "gen_s": 21.4,
+        "tool_calls": 28,
+        "agent_tool_calls": 11,
         "tool_failures": 0,
-        "llm_calls": 5,
-        "tokens": 27243,
+        "llm_calls": 6,
+        "tokens": 29086,
         "facts": 65,
-        "evidence": 25,
+        "evidence": 22,
         "gaps": 1,
         "dq": 1,
-        "sentences": 19,
+        "sentences": 21,
         "types": {
           "fact": 11,
-          "inference": 3,
-          "pending": 5
+          "inference": 4,
+          "pending": 6
         },
-        "evidenced_inference": 1,
-        "sourced_ratio": 0.895,
-        "blocks_before": 0,
-        "flags_before": {},
+        "evidenced_inference": 2,
+        "sourced_ratio": 0.905,
+        "blocks_before": 3,
+        "flags_before": {
+          "unit_mismatch": 1,
+          "dup_ref": 1,
+          "entity_mismatch": 2
+        },
         "repair": {
-          "attempted": 0,
-          "fixed": 0,
+          "attempted": 2,
+          "fixed": 2,
           "failed": 0,
           "deleted": 0
         },
         "blocks_after": 0,
         "warns_after": 0,
-        "pending": 5,
+        "pending": 6,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：下跌0.88%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：14,144亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：36家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：24家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：4连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「AI应用」的个股数：2只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：11家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日减少2,615亿元（−15.60%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 4,
         "verdicts": {
-          "支持": 3,
-          "部分支持": 1
+          "支持": 4
         },
         "hypothesis_problems": 0,
-        "title": "{{DATE}}盘后复盘：指数缩量普跌，传媒出版逆势活跃"
+        "deduped_pendings": 1,
+        "remaining_blocks": [],
+        "title": "{{DATE}}盘后复盘：指数普跌、量能收缩，涨停结构分散"
       },
       "template": {
         "date": "2026-10-14",
         "degraded": true,
-        "gen_s": 3,
+        "gen_s": 3.7,
         "tool_calls": 17,
         "agent_tool_calls": 0,
         "tool_failures": 0,
@@ -470,14 +548,14 @@
         "evidence": 9,
         "gaps": 1,
         "dq": 1,
-        "sentences": 12,
+        "sentences": 13,
         "types": {
-          "fact": 8,
-          "inference": 1,
-          "pending": 3
+          "fact": 9,
+          "inference": 0,
+          "pending": 4
         },
         "evidenced_inference": 0,
-        "sourced_ratio": 0.75,
+        "sourced_ratio": 0.692,
         "blocks_before": 0,
         "flags_before": {},
         "repair": {
@@ -488,47 +566,60 @@
         },
         "blocks_after": 0,
         "warns_after": 0,
-        "pending": 3,
+        "pending": 4,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：下跌0.88%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：14,144亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：36家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：24家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：4连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「AI应用」的个股数：2只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：11家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日减少2,615亿元（−15.60%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 0,
         "verdicts": {},
         "hypothesis_problems": 0,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
         "title": "{{DATE}}盘后复盘（数据底稿版）"
       }
     },
@@ -537,88 +628,100 @@
       "ai": {
         "date": "2026-10-13",
         "degraded": false,
-        "gen_s": 20.7,
-        "tool_calls": 25,
-        "agent_tool_calls": 8,
+        "gen_s": 24,
+        "tool_calls": 26,
+        "agent_tool_calls": 9,
         "tool_failures": 0,
         "llm_calls": 6,
-        "tokens": 29567,
-        "facts": 66,
-        "evidence": 22,
+        "tokens": 31653,
+        "facts": 64,
+        "evidence": 27,
         "gaps": 1,
         "dq": 1,
-        "sentences": 19,
+        "sentences": 23,
         "types": {
-          "fact": 11,
-          "inference": 3,
-          "pending": 5
+          "fact": 13,
+          "inference": 4,
+          "pending": 6
         },
-        "evidenced_inference": 0,
-        "sourced_ratio": 0.842,
+        "evidenced_inference": 2,
+        "sourced_ratio": 0.913,
         "blocks_before": 3,
         "flags_before": {
-          "unit_mismatch": 1,
-          "entity_mismatch": 2,
+          "untraced_number": 3,
           "fact_has_inference": 1
         },
         "repair": {
-          "attempted": 2,
-          "fixed": 1,
-          "failed": 1,
+          "attempted": 3,
+          "fixed": 3,
+          "failed": 0,
           "deleted": 0
         },
-        "blocks_after": 2,
+        "blocks_after": 0,
         "warns_after": 1,
-        "pending": 5,
+        "pending": 6,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：上涨0.10%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：16,759亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：67家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：19家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：3连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「PCB」的个股数：4只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：10家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加1,381亿元（+8.98%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 4,
         "verdicts": {
-          "支持": 3,
-          "部分支持": 1
+          "支持": 2,
+          "部分支持": 2
         },
         "hypothesis_problems": 0,
-        "title": "{{DATE}}盘后复盘：指数窄幅分化、量能温和放大，涨停结构呈低位修复特征"
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
+        "title": "{{DATE}}盘后复盘：指数窄幅分化，涨停家数与封板率回升"
       },
       "template": {
         "date": "2026-10-13",
         "degraded": true,
-        "gen_s": 3.4,
+        "gen_s": 2.7,
         "tool_calls": 17,
         "agent_tool_calls": 0,
         "tool_failures": 0,
@@ -628,14 +731,14 @@
         "evidence": 9,
         "gaps": 1,
         "dq": 1,
-        "sentences": 12,
+        "sentences": 13,
         "types": {
-          "fact": 8,
-          "inference": 1,
-          "pending": 3
+          "fact": 9,
+          "inference": 0,
+          "pending": 4
         },
         "evidenced_inference": 0,
-        "sourced_ratio": 0.75,
+        "sourced_ratio": 0.692,
         "blocks_before": 0,
         "flags_before": {},
         "repair": {
@@ -646,47 +749,60 @@
         },
         "blocks_after": 0,
         "warns_after": 0,
-        "pending": 3,
+        "pending": 4,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：上涨0.10%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：16,759亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：67家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：19家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：3连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「PCB」的个股数：4只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：10家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加1,381亿元（+8.98%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 0,
         "verdicts": {},
         "hypothesis_problems": 0,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
         "title": "{{DATE}}盘后复盘（数据底稿版）"
       }
     },
@@ -695,14 +811,14 @@
       "ai": {
         "date": "2026-10-12",
         "degraded": false,
-        "gen_s": 20.1,
-        "tool_calls": 27,
-        "agent_tool_calls": 10,
+        "gen_s": 21,
+        "tool_calls": 26,
+        "agent_tool_calls": 9,
         "tool_failures": 0,
         "llm_calls": 5,
-        "tokens": 25721,
-        "facts": 64,
-        "evidence": 24,
+        "tokens": 27390,
+        "facts": 63,
+        "evidence": 26,
         "gaps": 1,
         "dq": 1,
         "sentences": 19,
@@ -728,51 +844,63 @@
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：下跌0.43%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：15,378亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：46家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：25家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：10连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「AI漫剧」的个股数：3只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：22家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日减少3,627亿元（−19.09%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 4,
         "verdicts": {
-          "支持": 2,
-          "部分支持": 2
+          "支持": 4
         },
-        "hypothesis_problems": 0,
-        "title": "{{DATE}}盘后复盘：指数普跌、量能收缩，传媒方向逆势活跃"
+        "hypothesis_problems": 1,
+        "deduped_pendings": 1,
+        "remaining_blocks": [],
+        "title": "{{DATE}}盘后复盘：指数普跌、成交缩量，传媒内容链逆势活跃"
       },
       "template": {
         "date": "2026-10-12",
         "degraded": true,
-        "gen_s": 2.2,
+        "gen_s": 3.4,
         "tool_calls": 17,
         "agent_tool_calls": 0,
         "tool_failures": 0,
@@ -782,14 +910,14 @@
         "evidence": 9,
         "gaps": 1,
         "dq": 1,
-        "sentences": 12,
+        "sentences": 13,
         "types": {
-          "fact": 8,
-          "inference": 1,
-          "pending": 3
+          "fact": 9,
+          "inference": 0,
+          "pending": 4
         },
         "evidenced_inference": 0,
-        "sourced_ratio": 0.75,
+        "sourced_ratio": 0.692,
         "blocks_before": 0,
         "flags_before": {},
         "repair": {
@@ -800,47 +928,60 @@
         },
         "blocks_after": 0,
         "warns_after": 0,
-        "pending": 3,
+        "pending": 4,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：下跌0.43%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：15,378亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：46家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：25家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：10连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「AI漫剧」的个股数：3只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：22家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日减少3,627亿元（−19.09%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 0,
         "verdicts": {},
         "hypothesis_problems": 0,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
         "title": "{{DATE}}盘后复盘（数据底稿版）"
       }
     },
@@ -850,102 +991,23 @@
         "date": "2026-10-09",
         "degraded": false,
         "gen_s": 21.7,
-        "tool_calls": 27,
-        "agent_tool_calls": 10,
+        "tool_calls": 28,
+        "agent_tool_calls": 11,
         "tool_failures": 0,
-        "llm_calls": 6,
-        "tokens": 30937,
-        "facts": 65,
-        "evidence": 26,
+        "llm_calls": 5,
+        "tokens": 26836,
+        "facts": 66,
+        "evidence": 25,
         "gaps": 1,
         "dq": 1,
-        "sentences": 18,
+        "sentences": 21,
         "types": {
-          "fact": 10,
-          "inference": 4,
-          "pending": 4
+          "fact": 13,
+          "inference": 3,
+          "pending": 5
         },
         "evidenced_inference": 2,
-        "sourced_ratio": 0.778,
-        "blocks_before": 1,
-        "flags_before": {
-          "unit_mismatch": 1
-        },
-        "repair": {
-          "attempted": 1,
-          "fixed": 1,
-          "failed": 0,
-          "deleted": 0
-        },
-        "blocks_after": 0,
-        "warns_after": 0,
-        "pending": 4,
-        "coverage": {
-          "items": [
-            {
-              "name": "上证指数涨跌幅",
-              "status": "covered"
-            },
-            {
-              "name": "两市成交额",
-              "status": "covered"
-            },
-            {
-              "name": "涨停家数",
-              "status": "covered"
-            },
-            {
-              "name": "炸板或封板率",
-              "status": "covered"
-            },
-            {
-              "name": "最高连板",
-              "status": "covered"
-            },
-            {
-              "name": "第一大涨停题材",
-              "status": "covered"
-            },
-            {
-              "name": "跌停家数",
-              "status": "covered"
-            },
-            {
-              "name": "与前一交易日对比",
-              "status": "covered"
-            }
-          ],
-          "ratio": 1
-        },
-        "hypotheses": 4,
-        "verdicts": {
-          "支持": 2,
-          "部分支持": 2
-        },
-        "hypothesis_problems": 1,
-        "title": "{{DATE}}盘后复盘：指数窄幅收红、成交额放大，传媒方向午后活跃"
-      },
-      "template": {
-        "date": "2026-10-09",
-        "degraded": true,
-        "gen_s": 3.1,
-        "tool_calls": 17,
-        "agent_tool_calls": 0,
-        "tool_failures": 0,
-        "llm_calls": 0,
-        "tokens": 0,
-        "facts": 54,
-        "evidence": 9,
-        "gaps": 1,
-        "dq": 1,
-        "sentences": 12,
-        "types": {
-          "fact": 8,
-          "inference": 1,
-          "pending": 3
-        },
-        "evidenced_inference": 0,
-        "sourced_ratio": 0.75,
+        "sourced_ratio": 0.857,
         "blocks_before": 0,
         "flags_before": {},
         "repair": {
@@ -956,47 +1018,150 @@
         },
         "blocks_after": 0,
         "warns_after": 0,
-        "pending": 3,
+        "pending": 5,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：上涨0.05%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：19,005亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：69家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：13家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：9连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「固态电池」的个股数：4只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：10家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加2,184亿元（+12.99%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
+        },
+        "hypotheses": 4,
+        "verdicts": {
+          "支持": 3,
+          "部分支持": 1
+        },
+        "hypothesis_problems": 0,
+        "deduped_pendings": 1,
+        "remaining_blocks": [],
+        "title": "{{DATE}}盘后复盘：指数微涨、成交额放大，传媒方向午后走强"
+      },
+      "template": {
+        "date": "2026-10-09",
+        "degraded": true,
+        "gen_s": 4.5,
+        "tool_calls": 17,
+        "agent_tool_calls": 0,
+        "tool_failures": 0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "facts": 54,
+        "evidence": 9,
+        "gaps": 1,
+        "dq": 1,
+        "sentences": 13,
+        "types": {
+          "fact": 9,
+          "inference": 0,
+          "pending": 4
+        },
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.692,
+        "blocks_before": 0,
+        "flags_before": {},
+        "repair": {
+          "attempted": 0,
+          "fixed": 0,
+          "failed": 0,
+          "deleted": 0
+        },
+        "blocks_after": 0,
+        "warns_after": 0,
+        "pending": 4,
+        "coverage": {
+          "items": [
+            {
+              "name": "上证指数涨跌幅",
+              "status": "covered",
+              "hint": "上证指数涨跌幅：上涨0.05%"
+            },
+            {
+              "name": "两市成交额",
+              "status": "covered",
+              "hint": "沪深两市成交额：19,005亿元"
+            },
+            {
+              "name": "涨停家数",
+              "status": "covered",
+              "hint": "涨停家数：69家"
+            },
+            {
+              "name": "炸板或封板率",
+              "status": "covered",
+              "hint": "炸板家数：13家"
+            },
+            {
+              "name": "最高连板",
+              "status": "covered",
+              "hint": "最高连板高度：9连板"
+            },
+            {
+              "name": "第一大涨停题材",
+              "status": "covered",
+              "hint": "涨停原因含「固态电池」的个股数：4只"
+            },
+            {
+              "name": "跌停家数",
+              "status": "covered",
+              "hint": "跌停家数：10家"
+            },
+            {
+              "name": "与前一交易日对比",
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加2,184亿元（+12.99%）"
+            }
+          ],
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 0,
         "verdicts": {},
         "hypothesis_problems": 0,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
         "title": "{{DATE}}盘后复盘（数据底稿版）"
       }
     },
@@ -1005,26 +1170,27 @@
       "ai": {
         "date": "2026-10-08",
         "degraded": false,
-        "gen_s": 21.8,
+        "gen_s": 34.2,
         "tool_calls": 26,
         "agent_tool_calls": 9,
         "tool_failures": 0,
         "llm_calls": 6,
-        "tokens": 34279,
+        "tokens": 32970,
         "facts": 59,
-        "evidence": 31,
+        "evidence": 28,
         "gaps": 1,
         "dq": 1,
         "sentences": 20,
         "types": {
           "fact": 12,
-          "inference": 5,
-          "pending": 3
+          "inference": 3,
+          "pending": 5
         },
-        "evidenced_inference": 3,
-        "sourced_ratio": 0.9,
+        "evidenced_inference": 0,
+        "sourced_ratio": 0.75,
         "blocks_before": 1,
         "flags_before": {
+          "fact_has_inference": 1,
           "untraced_number": 1
         },
         "repair": {
@@ -1034,56 +1200,69 @@
           "deleted": 0
         },
         "blocks_after": 0,
-        "warns_after": 0,
-        "pending": 3,
+        "warns_after": 1,
+        "pending": 5,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：下跌0.79%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：16,821亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：42家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：32家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：8连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「固态电池」的个股数：5只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：15家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加2,441亿元（+16.98%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 4,
         "verdicts": {
           "支持": 4
         },
         "hypothesis_problems": 0,
-        "title": "{{DATE}}盘后复盘：指数普跌、情绪走弱，固态电池标签集中但强度与指数背离"
+        "deduped_pendings": 1,
+        "remaining_blocks": [],
+        "title": "{{DATE}}盘后复盘：指数普跌、封板率回落，固态电池题材逆势活跃"
       },
       "template": {
         "date": "2026-10-08",
         "degraded": true,
-        "gen_s": 5.8,
+        "gen_s": 2.9,
         "tool_calls": 17,
         "agent_tool_calls": 0,
         "tool_failures": 0,
@@ -1093,14 +1272,14 @@
         "evidence": 9,
         "gaps": 1,
         "dq": 1,
-        "sentences": 12,
+        "sentences": 13,
         "types": {
-          "fact": 8,
-          "inference": 1,
-          "pending": 3
+          "fact": 9,
+          "inference": 0,
+          "pending": 4
         },
         "evidenced_inference": 0,
-        "sourced_ratio": 0.75,
+        "sourced_ratio": 0.692,
         "blocks_before": 0,
         "flags_before": {},
         "repair": {
@@ -1111,47 +1290,60 @@
         },
         "blocks_after": 0,
         "warns_after": 0,
-        "pending": 3,
+        "pending": 4,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：下跌0.79%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：16,821亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：42家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：32家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：8连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「固态电池」的个股数：5只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：15家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加2,441亿元（+16.98%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 0,
         "verdicts": {},
         "hypothesis_problems": 0,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
         "title": "{{DATE}}盘后复盘（数据底稿版）"
       }
     },
@@ -1160,74 +1352,82 @@
       "ai": {
         "date": "2026-09-30",
         "degraded": false,
-        "gen_s": 22,
-        "tool_calls": 26,
-        "agent_tool_calls": 9,
+        "gen_s": 23.5,
+        "tool_calls": 27,
+        "agent_tool_calls": 10,
         "tool_failures": 0,
-        "llm_calls": 6,
-        "tokens": 32839,
-        "facts": 65,
-        "evidence": 30,
+        "llm_calls": 5,
+        "tokens": 28157,
+        "facts": 66,
+        "evidence": 28,
         "gaps": 1,
         "dq": 1,
-        "sentences": 22,
+        "sentences": 20,
         "types": {
-          "fact": 15,
-          "inference": 3,
+          "fact": 12,
+          "inference": 4,
           "pending": 4
         },
-        "evidenced_inference": 1,
-        "sourced_ratio": 0.955,
-        "blocks_before": 1,
-        "flags_before": {
-          "untraced_number": 1,
-          "fact_has_inference": 1
-        },
+        "evidenced_inference": 2,
+        "sourced_ratio": 0.9,
+        "blocks_before": 0,
+        "flags_before": {},
         "repair": {
-          "attempted": 1,
-          "fixed": 1,
+          "attempted": 0,
+          "fixed": 0,
           "failed": 0,
           "deleted": 0
         },
         "blocks_after": 0,
-        "warns_after": 1,
+        "warns_after": 0,
         "pending": 4,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：上涨0.31%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：14,380亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：52家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：12家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：7连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "missed"
+              "status": "covered",
+              "hint": "涨停原因含「业绩增长」的个股数：7只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：11家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加288亿元（+2.04%）"
             }
           ],
-          "ratio": 0.875
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 4,
         "verdicts": {
@@ -1235,12 +1435,14 @@
           "部分支持": 1
         },
         "hypothesis_problems": 0,
-        "title": "{{DATE}}盘后复盘：指数分化、地产链政策催化与高位股回落"
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
+        "title": "{{DATE}}盘后复盘：指数分化，地产链政策催化活跃，情绪边际转弱"
       },
       "template": {
         "date": "2026-09-30",
         "degraded": true,
-        "gen_s": 2.6,
+        "gen_s": 3.9,
         "tool_calls": 17,
         "agent_tool_calls": 0,
         "tool_failures": 0,
@@ -1250,14 +1452,14 @@
         "evidence": 9,
         "gaps": 1,
         "dq": 1,
-        "sentences": 12,
+        "sentences": 13,
         "types": {
-          "fact": 8,
-          "inference": 1,
-          "pending": 3
+          "fact": 9,
+          "inference": 0,
+          "pending": 4
         },
         "evidenced_inference": 0,
-        "sourced_ratio": 0.75,
+        "sourced_ratio": 0.692,
         "blocks_before": 0,
         "flags_before": {},
         "repair": {
@@ -1268,47 +1470,60 @@
         },
         "blocks_after": 0,
         "warns_after": 0,
-        "pending": 3,
+        "pending": 4,
         "coverage": {
           "items": [
             {
               "name": "上证指数涨跌幅",
-              "status": "covered"
+              "status": "covered",
+              "hint": "上证指数涨跌幅：上涨0.31%"
             },
             {
               "name": "两市成交额",
-              "status": "covered"
+              "status": "covered",
+              "hint": "沪深两市成交额：14,380亿元"
             },
             {
               "name": "涨停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停家数：52家"
             },
             {
               "name": "炸板或封板率",
-              "status": "covered"
+              "status": "covered",
+              "hint": "炸板家数：12家"
             },
             {
               "name": "最高连板",
-              "status": "covered"
+              "status": "covered",
+              "hint": "最高连板高度：7连板"
             },
             {
               "name": "第一大涨停题材",
-              "status": "covered"
+              "status": "covered",
+              "hint": "涨停原因含「业绩增长」的个股数：7只"
             },
             {
               "name": "跌停家数",
-              "status": "covered"
+              "status": "covered",
+              "hint": "跌停家数：11家"
             },
             {
               "name": "与前一交易日对比",
-              "status": "covered"
+              "status": "covered",
+              "hint": "两市成交额较前一交易日变化：较前一交易日增加288亿元（+2.04%）"
             }
           ],
-          "ratio": 1
+          "covered": 8,
+          "applicable": 8,
+          "ratio": 1,
+          "missed": []
         },
         "hypotheses": 0,
         "verdicts": {},
         "hypothesis_problems": 0,
+        "deduped_pendings": 0,
+        "remaining_blocks": [],
         "title": "{{DATE}}盘后复盘（数据底稿版）"
       }
     }

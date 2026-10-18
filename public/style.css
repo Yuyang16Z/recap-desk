@@ -155,6 +155,9 @@ table.eval th { color: var(--sub); background: #fafbfc; }
 /* ---- 第三轮交互优化 ---- */
 .gate-why { margin-top: 10px; font-size: 13px; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 6px 10px; }
 .gate-why a, .pop a, .fact a[data-goto] { color: var(--blue); cursor: pointer; text-decoration: underline; }
+.gate-why.busy { color: #5b3cc4; background: #ece8fb; }
+.tag.sys { background: #e8eef9; color: #2f5fb3; cursor: help; }
+.preview .ref { margin-left: 2px; }
 .sticky-bar { display: none; position: sticky; top: calc(var(--hdr, 58px) + 6px); z-index: 4; background: rgba(255,255,255,.96); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; margin-bottom: 10px; align-items: center; gap: 10px; font-size: 13px; box-shadow: 0 4px 14px rgba(20,30,50,.08); }
 .sticky-bar.show { display: flex; }
 .spacer { flex: 1; }
