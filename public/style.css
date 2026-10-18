@@ -32,7 +32,9 @@ main { display: grid; grid-template-columns: 270px minmax(0, 1fr) 380px; gap: 14
 .left .primary { width: 100%; margin-top: 10px; padding: 9px; font-weight: 600; }
 .sim { margin: 10px 0 0; font-size: 13px; }
 .sim summary { cursor: pointer; color: var(--sub); }
-.sim label { display: block; margin: 4px 0 0 4px; }
+/* .left input 的 width:100% 会把复选框撑满整行、文字掉到下一行：复选框单独恢复为自身宽度 */
+.sim label { display: flex; align-items: center; gap: 6px; margin: 6px 0 0 4px; cursor: pointer; }
+.sim input[type="checkbox"] { width: auto; margin: 0; flex: none; }
 .run-list { list-style: none; padding: 0; margin: 0; max-height: 52vh; overflow: auto; }
 .run-list li { padding: 8px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; }
 .run-list li:hover { background: #f6f7fa; }

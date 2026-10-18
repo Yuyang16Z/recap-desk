@@ -762,7 +762,7 @@ async function showEval() {
   <h4>成本与稳定性</h4><div class="mgrid">
     ${card(`${a.avg_gen_s}s`, '平均生成用时', `最长 ${a.max_gen_s}s`)}
     ${card(a.avg_tool_calls, '平均接口调用', `其中 Agent 自主 ${a.avg_agent_tool_calls} 次；失败 ${a.tool_failures} 次`)}
-    ${card(a.avg_tokens, '平均 token', '每篇含 Agent、撰写、自修复的全部调用')}
+    ${card(Math.round(a.avg_tokens).toLocaleString('zh-CN'), '平均 token', '每篇含 Agent、撰写、自修复的全部调用')}
     ${card(`${a.ai_success}/${a.runs}`, 'AI 生成成功', '未降级为模板稿的次数')}
   </div>
   <h4>逐日明细</h4>
