@@ -4,7 +4,7 @@
 
 - **在线体验**：https://recap-desk.onrender.com（Render 免费实例，新加坡区；北京时间 9:00–23:00 由 GitHub Actions 每 10 分钟访问一次以保持唤醒，其他时段首次打开约需 30–60 秒冷启动。2026-10-18 用站长工具从国内 53 个节点 ping：域名正常解析，多数节点 150–270ms 可达，浙江杭州多线 163ms）
 - **源代码**：https://github.com/Yuyang16Z/recap-desk
-- **测试说明**：[docs/TESTING.md](docs/TESTING.md) · **多日评测**：[docs/EVAL.md](docs/EVAL.md) · **AI 使用与验证记录**：[docs/AI_USAGE.md](docs/AI_USAGE.md) · **演示视频**：111 秒，用自动化浏览器操作线上实例录制，随笔试提交包提供
+- **测试说明**：[docs/TESTING.md](docs/TESTING.md) · **多日评测**：[docs/EVAL.md](docs/EVAL.md) · **AI 使用与验证记录**：[docs/AI_USAGE.md](docs/AI_USAGE.md) · **演示视频**：129 秒，用自动化浏览器操作线上实例录制（含一段故障演练），随笔试提交包提供
 - **数据**：同花顺金融数据（扶摇 API，12 类接口）+ iFinD MCP（新闻检索）；**模型**：DeepSeek（OpenAI 兼容接口，可换）
 
 ```
