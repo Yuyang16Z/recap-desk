@@ -174,6 +174,16 @@ app.patch('/api/runs/:id/sentences/:sid', (req, res) => {
   res.json(run);
 });
 
+// 编辑时的实时校验：只计算，不保存，供前端边写边看问题
+app.post('/api/runs/:id/preview', (req, res) => {
+  const run = getRun(req, res);
+  if (!run) return;
+  const { text = '', type = 'fact' } = req.body || {};
+  if (typeof text !== 'string') return res.status(400).json({ error: 'text 必须是字符串' });
+  const s = { text: text.slice(0, 500), type: ['fact', 'inference', 'pending'].includes(type) ? type : 'fact', refs: [] };
+  res.json({ flags: verifySentence(s, run, entityNames(run), rules()), rendered: renderText(s.text, run, run.trading.date) });
+});
+
 app.post('/api/runs/:id/sentences', (req, res) => {
   const run = getRun(req, res);
   if (!run || !guardEditable(run, res)) return;

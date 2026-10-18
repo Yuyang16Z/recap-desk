@@ -156,3 +156,12 @@ describe('关键事实覆盖提醒', () => {
     assert.deepEqual(c.missed.map((m) => m.name).sort(), ['涨停家数', '第一大涨停题材'].sort());
   });
 });
+
+describe('荐股规则覆盖中间隔字的写法', () => {
+  test('「建议明日关注」「建议适当布局」判为买卖建议', () => {
+    for (const text of ['建议明日关注低空经济。', '建议适当布局。']) {
+      const flags = verifySentence({ text, type: 'inference', refs: ['F3'] }, sheet);
+      assert.ok(flags.some((f) => f.rule === 'advice' && f.level === 'block'), text);
+    }
+  });
+});
